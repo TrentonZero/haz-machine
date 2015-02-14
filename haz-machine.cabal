@@ -1,0 +1,21 @@
+Name: haz-machine
+Version: 0.0.1
+Cabal-Version: >= 1.2
+Build-Type: Simple
+
+Test-Suite test-MemoryMap
+    hs-source-dirs: src
+    type: detailed-0.9
+    test-module: MemoryMap
+    build-depends: base >= 2.0, Cabal >= 1.9.2
+
+Test-Suite test-ZSCIIString
+    hs-source-dirs: src
+    type: detailed-0.9
+    test-module: ZSCIIString 
+    build-depends: base >= 2.0, Cabal >= 1.9.2
+
+library
+    hs-source-dirs: src
+    Exposed-Modules: MemoryMap, ZSCIIString
+    Build-Depends: base >= 2.0
