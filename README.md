@@ -1,4 +1,6 @@
 # haz-machine
+[![Build
+Status](https://travis-ci.org/TrentonZero/haz-machine.svg)](https://travis-ci.org/TrentonZero/haz-machine.svg)
 
 A Z-Machine implementation in Haskell. 
 
