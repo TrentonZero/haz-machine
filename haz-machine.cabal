@@ -1,21 +1,24 @@
 Name: haz-machine
 Version: 0.0.1
-Cabal-Version: >= 1.2
+Cabal-Version: >= 1.9.2
 Build-Type: Simple
 
-Test-Suite test-MemoryMap
-    hs-source-dirs: src
-    type: detailed-0.9
-    test-module: MemoryMap
-    build-depends: base >= 2.0, Cabal >= 1.9.2
+test-suite haz-machine-tests
+    build-depends:    base, haz-machine, hspec == 2.1.*, QuickCheck == 2.7.*
+    hs-source-dirs:   test-suite
+    main-is:          Spec.hs
+    ghc-options:     
+                      -threaded
+                      "-with-rtsopts=-N"
+    type:             exitcode-stdio-1.0
 
-Test-Suite test-ZSCIIString
-    hs-source-dirs: src
-    type: detailed-0.9
-    test-module: ZSCIIString 
-    build-depends: base >= 2.0, Cabal >= 1.9.2
+benchmark criterion
+    build-depends:    base, haz-machine, criterion 
+    hs-source-dirs:   benchmark
+    main-is:          Bench.hs
+    type:             exitcode-stdio-1.0
 
 library
     hs-source-dirs: src
     Exposed-Modules: MemoryMap, ZSCIIString
-    Build-Depends: base >= 2.0
+    Build-Depends: base >= 2.0, vector

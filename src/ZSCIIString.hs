@@ -1,13 +1,19 @@
 module ZSCIIString 
-(
-    ZSCIIString.tests
-)
 where 
 
 import MemoryMap
 import Data.Word(Word16)
+import Data.Word(Word8)
 import Data.Bits
-import Distribution.TestSuite
+import Data.Char
+
+
+-- ZChars are 5 bits, but will store in 8 bit words.
+type ZChar = Word8
+
+
+-- ZChar interpretation will depend upon the current shift register.
+data ShiftRegister = UPPER | LOWER | SYMBOL
 
 -- ZSCII Strings pack three 5-bit characters into a 16-bit word. The string terminator is the first bit of the WORD16. If it is 1, the string is terminated. So to read a full ZSCII string, we have to read until we find a character with a most significant bit true. 
 readZSCIIString :: Memory -> Location -> Memory
@@ -18,54 +24,52 @@ readZSCIIString current loc =   let cell = readMemoryCell current loc
 						True -> [cell]
 						False -> cell : readZSCIIString current (loc+1)
 
-test_readZSCIIString_base = let memory = [1,2,3,4,5,6,7,0xFFFF,8,9,10]
-				location = 2
-				expected_memory =[3,4,5,6,7,0xFFFF] 
-			    in assertWithMessage (readZSCIIString memory location == expected_memory) "Did not correctly read ZCSII string from memory"
-
-test_readZSCIIString_noterm = let   memory = [1,2,3,4,5,6,7,8,9,10]
-				    location = 2
-				    expected_memory =[3,4,5,6,7,8,9,10] 
-			    in assertWithMessage (readZSCIIString memory location == expected_memory) "Did not correctly read ZCSII string from memory"
-
---------- TEST CASES ----------
-
-assertWithMessage :: Bool ->  String -> Progress
-assertWithMessage condition fail_message =
-		 if condition then 
-		    Finished Pass
-		else
-		    Finished $ Fail fail_message
-
-assert :: Bool -> Progress
-assert condition = assertWithMessage condition "no match"
 
 
 
-tests :: IO [Test]
-tests = return [
-		    Test t_readZSCIIString_base,
-		    Test t_readZSCIIString_noterm
-		]
-    where
-	t_readZSCIIString_noterm = TestInstance
-	    { run = return $ test_readZSCIIString_noterm
-		    , name = "test_readZSCIIString_noterm"
-		    , tags = []
-		    , options = []
-		    , setOption = \_ _ -> Right t_readZSCIIString_noterm
-	    }
-	t_readZSCIIString_base = TestInstance
-	    { run = return $ test_readZSCIIString_base
-		    , name = "test_readZSCIIString_base"
-		    , tags = []
-		    , options = []
-		    , setOption = \_ _ -> Right t_readZSCIIString_base
-	    }
+--
+
+splitMemoryCellToZChar :: MemoryCell -> [ZChar] 
+splitMemoryCellToZChar cell = let mod_cell = clearBit cell 15 -- need to clear the bit that serves as new-line indicator
+				  zchar1 = fromIntegral (shiftR mod_cell 10) :: Word8
+				  zchar2 = fromIntegral (shiftR (shiftL mod_cell 5) 10) :: Word8
+				  zchar3 = fromIntegral (shiftR (shiftL mod_cell 10) 10) :: Word8
+			      in [zchar1,  zchar2,  zchar3]
 
 
+--convertZSCIIStringToZCharString :: ShiftRegister -> Memory -> [ZChar]
 
+--
 
+convertZCharToASCIIChar :: ShiftRegister -> ZChar  -> Char
+convertZCharToASCIIChar LOWER zchar = chr ((fromIntegral zchar) + 91)
+convertZCharToASCIIChar UPPER zchar = chr ((fromIntegral zchar) + 59)
+convertZCharToASCIIChar SYMBOL 6 = ' '
+convertZCharToASCIIChar SYMBOL 7 = '0'
+convertZCharToASCIIChar SYMBOL 8 = '1'
+convertZCharToASCIIChar SYMBOL 9 = '2'
+convertZCharToASCIIChar SYMBOL 10 = '3'
+convertZCharToASCIIChar SYMBOL 11 = '4'
+convertZCharToASCIIChar SYMBOL 12 = '5'
+convertZCharToASCIIChar SYMBOL 13 = '6'
+convertZCharToASCIIChar SYMBOL 14 = '7'
+convertZCharToASCIIChar SYMBOL 15 = '8'
+convertZCharToASCIIChar SYMBOL 16 = '9'
+convertZCharToASCIIChar SYMBOL 17 = '.'
+convertZCharToASCIIChar SYMBOL 18 = ','
+convertZCharToASCIIChar SYMBOL 19 = '!'
+convertZCharToASCIIChar SYMBOL 20 = '?'
+convertZCharToASCIIChar SYMBOL 21 = '_'
+convertZCharToASCIIChar SYMBOL 22 = '#'
+convertZCharToASCIIChar SYMBOL 23 = '\''
+convertZCharToASCIIChar SYMBOL 24 = '"'
+convertZCharToASCIIChar SYMBOL 25 = '/'
+convertZCharToASCIIChar SYMBOL 26 = '\\'
+convertZCharToASCIIChar SYMBOL 27 = '<'
+convertZCharToASCIIChar SYMBOL 28 = '-'
+convertZCharToASCIIChar SYMBOL 29 = ':'
+convertZCharToASCIIChar SYMBOL 30 = '('
+convertZCharToASCIIChar SYMBOL 31 = ')'
 
 
 
