@@ -1,6 +1,7 @@
 -- test-suite/ZSCIIStringSpec.hs
 module ZSCIIStringSpec (spec) where
 import ZSCIIString
+import MemoryMap
 import Test.Hspec
 import Test.Hspec.QuickCheck
 import Data.Vector.Unboxed
@@ -18,14 +19,14 @@ spec = parallel $ do
 
 
 
-test_readZSCIIString_base = let memory = fromList [1,2,3,4,5,6,7,0xFFFF,8,9,10]
+test_readZSCIIString_base = let memory = MemoryMap (fromList [1,2,3,4,5,6,7,0xFFFF,8,9,10]) []
 				location = 2
 				expected_memory =[3,4,5,6,7,0xFFFF] 
 			    in assertWithMessage (readZSCIIString memory location == expected_memory) "Read ZCSII string from memory"
 
 
 
-test_readZSCIIString_noterm = let   memory = fromList [1,2,3,4,5,6,7,8,9,10]
+test_readZSCIIString_noterm = let   memory = MemoryMap (fromList [1,2,3,4,5,6,7,8,9,10]) []
 				    location = 2
 				    expected_memory =[3,4,5,6,7,8,9,10] 
 			    in assertWithMessage (readZSCIIString memory location == expected_memory) "Read ZCSII string from memory when terminator is missing"

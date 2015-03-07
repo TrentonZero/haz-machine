@@ -1,17 +1,4 @@
 module MemoryMap
-(
-    MemoryMap(memory),
-    MemoryMap.Memory, 
-    MemoryMap.MemoryCell, 
-    MemoryMap.Location, 
-    MemoryMap.writeMemoryCell,
-    MemoryMap.writeMemory,
-    MemoryMap.readMemoryCell,
-    MemoryMap.fst3,
-    MemoryMap.snd3,
-    MemoryMap.thrd3,
-    MemoryMap.splitAt3
-) 
 where 
 
 import Data.Word(Word16)
@@ -32,32 +19,59 @@ type Memory = V.Vector  MemoryCell
 type Location = Int
 
 data MemoryMap = MemoryMap  {
-	    memory :: Memory  
-	    } deriving (Show)
+	    memory :: Memory,
+	    stack :: [MemoryCell]
+	    } deriving (Show, Eq)
 
+updateStack :: MemoryMap -> [MemoryCell] -> MemoryMap
+updateStack current newStack = MemoryMap (memory current) newStack
 
+updateMemoryMap :: MemoryMap -> Memory -> MemoryMap
+updateMemoryMap current newMemory = MemoryMap newMemory (stack current)
 
 
 -- Write a single memory cell at a given location.
-writeMemoryCell :: Memory  -> Location -> MemoryCell -> Memory
+writeMemoryCell :: MemoryMap  -> Location -> MemoryCell -> MemoryMap
 writeMemoryCell current loc newCell = 
-			current V.// [(loc, newCell)]
+			let result = (memory current) V.// [(loc,newCell)]
+			in updateMemoryMap current result 
+
 
 
 -- Read a single memory cell from a given location.
-readMemoryCell :: Memory -> Location -> Maybe MemoryCell
-readMemoryCell current loc = current V.!? loc
+readMemoryCell :: MemoryMap -> Location -> Maybe MemoryCell
+readMemoryCell current loc = (memory current) V.!? loc
 
 
 -- This basically splits the memory into three, and replaces the middle with the
 -- memory we intend to write. Probably not the most efficient way to do it,
 -- especially given the cost of computing the length of the inbound  memory cell list.
-writeMemory :: Memory -> Location -> [MemoryCell] -> Memory
+writeMemory :: MemoryMap -> Location -> [MemoryCell] -> MemoryMap
 writeMemory current loc cells = let zipped = zip [loc .. (loc+(length cells))] cells
-				in current V.// zipped
+				    result = (memory current) V.// zipped
+				in updateMemoryMap current result 
 
 
+pushToStack :: MemoryMap -> MemoryCell -> MemoryMap
+pushToStack state cell = let result = cell : (stack state)
+			 in updateStack state result 
 		    
+popFromStack :: MemoryMap -> (Maybe MemoryCell, MemoryMap)
+popFromStack state = let result = popFromStackInt (stack state)
+	             in (fst result, (updateStack state (snd result)))
+
+peekFromStack :: MemoryMap -> (Maybe MemoryCell, MemoryMap)
+peekFromStack state = let result = peekFromStackInt (stack state)
+	             in (fst result, (updateStack state (snd result)))
+
+popFromStackInt :: [MemoryCell] -> (Maybe MemoryCell, [MemoryCell])
+popFromStackInt (x:stack)  = (Just x, stack)
+popFromStackInt _ = (Nothing, [])
+
+peekFromStackInt :: [MemoryCell] -> (Maybe MemoryCell, [MemoryCell])
+peekFromStackInt (x:stack)  = (Just x, x : stack)
+peekFromStackInt _ = (Nothing, [])
+
 -------  LOCAL FUNCTIONS TO HELP OUT ----------- 
 
 fst3 :: (a, b, c) -> a

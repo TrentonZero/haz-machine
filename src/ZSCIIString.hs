@@ -16,7 +16,7 @@ type ZChar = Word8
 data ShiftRegister = UPPER | LOWER | SYMBOL
 
 -- ZSCII Strings pack three 5-bit characters into a 16-bit word. The string terminator is the first bit of the WORD16. If it is 1, the string is terminated. So to read a full ZSCII string, we have to read until we find a character with a most significant bit true. 
-readZSCIIString :: Memory -> Location -> [MemoryCell]
+readZSCIIString :: MemoryMap -> Location -> [MemoryCell]
 readZSCIIString current loc =   let cell = readMemoryCell current loc
 				in case (cell) of 
 				Nothing -> []
