@@ -6,10 +6,10 @@ import MemoryMap
 import Data.Vector.Unboxed
 
 maxMemorySize = 1024 * 1024 -- 1 MB
-smallVector = MemoryMap (fromList [1..10]) []
-biggerVector =  MemoryMap (fromList [0 | a<-[1..100] ]) []
-fatVector = MemoryMap (fromList [ 0 | a<-[1..100000] ]) []
-maxVector = MemoryMap (fromList [ 0 | a<-[1..maxMemorySize] ]) [] 
+smallVector = MemoryMap (fromList [1..10]) [] 0 []
+biggerVector =  MemoryMap (fromList [0 | a<-[1..100] ]) [] 0 []
+fatVector = MemoryMap (fromList [ 0 | a<-[1..100000] ]) [] 0 []
+maxVector = MemoryMap (fromList [ 0 | a<-[1..maxMemorySize] ]) []  0 []
 
 trivialWriteMemoryCell = memory (writeMemoryCell smallVector 9 9)
 biggerWriteMemoryCell = memory (writeMemoryCell biggerVector 9 9)

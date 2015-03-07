@@ -3,6 +3,7 @@ where
 
 import Data.Word(Word16)
 import Data.Bits
+import Data.Maybe
 import qualified Data.Vector.Unboxed as V
 import Control.Monad.ST 
 import Control.Monad
@@ -18,16 +19,29 @@ type MemoryCell = Word16
 type Memory = V.Vector  MemoryCell
 type Location = Int
 
+-- The entire game state. This includes:
+--	memory : All dynamic memory.
+--	stack : the contents of the entire stack (this includes all stack
+--		frames)
+--	programCounter : The current program counter (location in dynamic memory
+--		where execution is currently present.
+--	stackFrames : A list of previous stacks. When a new routine is entered,
+--		a new stack is created and the current stack should be pushed onto the
+--		head of the "stackFrames". When a routine exits, the current stack
+--		should be discarded and the current head of stackFrames should be popped
+--		and return to its state.  
 data MemoryMap = MemoryMap  {
 	    memory :: Memory,
-	    stack :: [MemoryCell]
+	    stack :: [MemoryCell],
+	    programCounter :: Int,
+	    stackFrames :: [[MemoryCell]]
 	    } deriving (Show, Eq)
 
 updateStack :: MemoryMap -> [MemoryCell] -> MemoryMap
-updateStack current newStack = MemoryMap (memory current) newStack
+updateStack current newStack = MemoryMap (memory current) newStack (programCounter current) (stackFrames current)
 
 updateMemoryMap :: MemoryMap -> Memory -> MemoryMap
-updateMemoryMap current newMemory = MemoryMap newMemory (stack current)
+updateMemoryMap current newMemory = MemoryMap newMemory (stack current) (programCounter current) (stackFrames current)
 
 
 -- Write a single memory cell at a given location.
@@ -55,6 +69,13 @@ writeMemory current loc cells = let zipped = zip [loc .. (loc+(length cells))] c
 pushToStack :: MemoryMap -> MemoryCell -> MemoryMap
 pushToStack state cell = let result = cell : (stack state)
 			 in updateStack state result 
+
+updateStackHead :: MemoryMap -> (MemoryCell -> MemoryCell) -> MemoryMap
+updateStackHead state function = let tupleStack = popFromStack state
+				     firstTuple = fst tupleStack
+				 in if firstTuple == Nothing then state
+				    else let result = (function (fromJust firstTuple)) : (stack ( snd tupleStack) )
+					 in updateStack state result	
 		    
 popFromStack :: MemoryMap -> (Maybe MemoryCell, MemoryMap)
 popFromStack state = let result = popFromStackInt (stack state)
