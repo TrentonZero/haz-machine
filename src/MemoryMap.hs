@@ -16,7 +16,7 @@ where
 
 import Data.Word(Word16)
 import Data.Bits
-import qualified Data.Vector.Unboxed.Mutable as M
+import qualified Data.Vector.Unboxed as V
 import Control.Monad.ST 
 import Control.Monad
 import Data.STRef
@@ -28,43 +28,47 @@ import Data.STRef
 
 
 type MemoryCell = Word16
-type Memory = [MemoryCell] 
+type Memory = V.Vector  MemoryCell
 type Location = Int
 
 data MemoryMap = MemoryMap  {
-	    memory :: Memory
+	    memory :: Memory  
 	    } deriving (Show)
 
 
 
 
 -- Write a single memory cell at a given location.
-writeMemoryCell :: Memory -> Location -> MemoryCell -> Memory
+writeMemoryCell :: Memory  -> Location -> MemoryCell -> Memory
 writeMemoryCell current loc newCell = 
-			let (x,_:xs) = (splitAt loc current)
-			in x ++ newCell : xs					    
+			current V.// [(loc, newCell)]
+			--let (x,_:xs) = (splitAt loc current)
+			--in x ++ newCell : xs					    
 
 
 -- Read a single memory cell from a given location.
 readMemoryCell :: Memory -> Location -> Maybe MemoryCell
-readMemoryCell current loc = let splitLoc = (snd (splitAt loc current) )
-				in if not (null splitLoc) then 
-				  Just (head splitLoc)
-				else 
-				  Nothing
+readMemoryCell current loc = current V.!? loc
+--let splitLoc = (snd (splitAt loc current) )
+				--in if not (null splitLoc) then 
+				  --Just (head splitLoc)
+				--else 
+				--  Nothing
 
 
 -- This basically splits the memory into three, and replaces the middle with the
 -- memory we intend to write. Probably not the most efficient way to do it,
 -- especially given the cost of computing the length of the inbound  memory cell list.
 writeMemory :: Memory -> Location -> [MemoryCell] -> Memory
-writeMemory current loc cells = let loc1 = loc
-				    loc2 = loc + (length cells)
-				    tuple = splitAt3 loc1 loc2 current
-				    top = fst3 tuple
-				    middle = cells
-				    bottom = thrd3 tuple
-				    in top ++ middle ++  bottom
+writeMemory current loc cells = let zipped = zip [loc .. (loc+(length cells))] cells
+				in current V.// zipped
+--let loc1 = loc
+				    --loc2 = loc + (length cells)
+				    --tuple = splitAt3 loc1 loc2 current
+				    --top = fst3 tuple
+				    --middle = cells
+				    --bottom = thrd3 tuple
+				    --in top ++ middle ++  bottom
 
 
 		    

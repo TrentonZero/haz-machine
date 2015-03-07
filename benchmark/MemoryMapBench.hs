@@ -3,23 +3,28 @@ module MemoryMapBench (benchmarks) where
 
 import Criterion (Benchmark, bench, nf)
 import MemoryMap
+import Data.Vector.Unboxed
 
 maxMemorySize = 1024 * 1024 -- 1 MB
+smallVector = fromList [1..10]
+biggerVector =  fromList [0 | a<-[1..100] ]
+fatVector = fromList [ 0 | a<-[1..100000] ]
+maxVector = fromList [ 0 | a<-[1..maxMemorySize] ]
 
-trivialWriteMemoryCell = writeMemoryCell [1..10] 9 9
-biggerWriteMemoryCell = writeMemoryCell [ 0 |a<-[1..100] ] 9 9
-fatWriteMemoryCell = writeMemoryCell [ 0 |a<-[1..100000] ] 99999 9
-maxWriteMemoryCell = writeMemoryCell [ 0 |a<-[1..maxMemorySize] ] (maxMemorySize-1) 9
+trivialWriteMemoryCell = writeMemoryCell smallVector 9 9
+biggerWriteMemoryCell = writeMemoryCell biggerVector 9 9
+fatWriteMemoryCell = writeMemoryCell fatVector 99999 9
+maxWriteMemoryCell = writeMemoryCell maxVector (maxMemorySize-1) 9
 
-trivialWriteMemory = writeMemory [1..10] 9 [9]
-biggerWriteMemory = writeMemory [ 0 |a<-[1..100] ] 9 [9]
-fatWriteMemory = writeMemory [ 0 |a<-[1..100000] ] 99999 [9]
-maxWriteMemory = writeMemory [ 0 |a<-[1..maxMemorySize] ] (maxMemorySize-1) [9]
+trivialWriteMemory = writeMemory smallVector 9 [9]
+biggerWriteMemory = writeMemory biggerVector 9 [9]
+fatWriteMemory = writeMemory fatVector 99999 [9]
+maxWriteMemory = writeMemory maxVector (maxMemorySize-1) [9]
 
-trivialReadMemoryCell = readMemoryCell [1..10] 9 
-biggerReadMemoryCell = readMemoryCell [ 0 |a<-[1..100] ] 9 
-fatReadMemoryCell = readMemoryCell [ 0 |a<-[1..100000] ] 99999 
-maxReadMemoryCell = readMemoryCell [ 0 |a<-[1..maxMemorySize] ] (maxMemorySize-1) 
+trivialReadMemoryCell = readMemoryCell smallVector 9 
+biggerReadMemoryCell = readMemoryCell biggerVector 9 
+fatReadMemoryCell = readMemoryCell fatVector 99999 
+maxReadMemoryCell = readMemoryCell maxVector (maxMemorySize-1) 
 
 benchmarks :: [Benchmark]
 benchmarks =

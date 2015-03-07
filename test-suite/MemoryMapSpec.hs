@@ -3,6 +3,7 @@ module MemoryMapSpec (spec) where
 import MemoryMap 
 import Test.Hspec
 import Test.Hspec.QuickCheck
+import Data.Vector.Unboxed
 
 
 spec :: Spec
@@ -21,18 +22,18 @@ spec = parallel $ do
 --- old stuff
 
 test_writeMemoryCell_base :: SpecWith ()
-test_writeMemoryCell_base = let memory = [1,2,3,4,5,6,7,8,9,10]
+test_writeMemoryCell_base = let memory = fromList [1,2,3,4,5,6,7,8,9,10]
 				location = 2
 				cell = 0
-				expected = [1,2,0,4,5,6,7,8,9,10]
+				expected = fromList [1,2,0,4,5,6,7,8,9,10]
 			    in assertWithMessage (writeMemoryCell memory location cell == expected) "Write one memorycell"
 
 
-test_readMemoryCell_base =  let memory = [1,2,3,4,5,6,7,8,9,10]
+test_readMemoryCell_base =  let memory = fromList [1,2,3,4,5,6,7,8,9,10]
 				location = 2
 				expected = Just 3
 			    in assertWithMessage (readMemoryCell memory location == expected) "Read memory"
-test_readMemoryCell_oob =  let  memory = [1,2,3,4,5,6,7,8,9,10]
+test_readMemoryCell_oob =  let  memory = fromList [1,2,3,4,5,6,7,8,9,10]
 				location = 11
 				expected = Nothing 
 			    in assertWithMessage (readMemoryCell memory location == expected) "Read memory out of bounds."
@@ -40,10 +41,10 @@ test_readMemoryCell_oob =  let  memory = [1,2,3,4,5,6,7,8,9,10]
 
 
 			    
-test_writeMemory_base = let memory = [1,2,3,4,5,6,7,8,9,10]
+test_writeMemory_base = let memory = fromList [1,2,3,4,5,6,7,8,9,10]
 			    location = 2
 			    cells = [0,1,2,3]
-			    expected = [1,2,0,1,2,3,7,8,9,10]
+			    expected = fromList [1,2,0,1,2,3,7,8,9,10]
 			in assertWithMessage (writeMemory memory location cells == expected) "Write Memory range"
 
 
