@@ -61,15 +61,6 @@ test_splitAt3_base = assertWithMessage ((splitAt3 1 3 [0,1,2,3,4,5,6,7,8,9]) == 
 
 --------- TEST CASES ----------
 
---assertWithMessage :: Bool ->  String -> Progress
---assertWithMessage condition fail_message =
-		 --if condition then 
-		    --Finished Pass
-		--else
-		    --Finished $ Fail fail_message
-
---assert :: Bool -> Progress
---assert condition = assertWithMessage condition "no match"
 
 assertWithMessage :: Bool -> String -> SpecWith ()
 assertWithMessage condition message =  it message $ do condition
