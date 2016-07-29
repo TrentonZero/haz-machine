@@ -18,6 +18,13 @@ import Data.STRef
 type MemoryCell = Word16
 type Memory = V.Vector  MemoryCell
 type Location = Int
+--
+-- ZChar interpretation will depend upon the current shift register.
+data ShiftRegister = 
+   UPPER | UPPER_THEN_LOWER | UPPER_THEN_SYMBOL
+ | LOWER | LOWER_THEN_UPPER | LOWER_THEN_SYMBOL
+ | SYMBOL| SYMBOL_THEN_LOWER | SYMBOL_THEN_UPPER 
+ deriving (Show, Eq)
 
 -- The entire game state. This includes:
 --	memory : All dynamic memory.
@@ -34,15 +41,18 @@ data MemoryMap = MemoryMap  {
 	    memory :: Memory,
 	    stack :: [MemoryCell],
 	    programCounter :: Int,
-	    stackFrames :: [[MemoryCell]]
+	    stackFrames :: [[MemoryCell]],
+	    shiftRegister :: ShiftRegister
 	    } deriving (Show, Eq)
 
 updateStack :: MemoryMap -> [MemoryCell] -> MemoryMap
-updateStack current newStack = MemoryMap (memory current) newStack (programCounter current) (stackFrames current)
+updateStack current newStack = MemoryMap (memory current) newStack (programCounter current) (stackFrames current) (shiftRegister current)
 
 updateMemoryMap :: MemoryMap -> Memory -> MemoryMap
-updateMemoryMap current newMemory = MemoryMap newMemory (stack current) (programCounter current) (stackFrames current)
+updateMemoryMap current newMemory = MemoryMap newMemory (stack current) (programCounter current) (stackFrames current) (shiftRegister current)
 
+updateShiftRegister :: MemoryMap -> ShiftRegister -> MemoryMap
+updateShiftRegister current newShiftRegister = MemoryMap (memory current) (stack current) (programCounter current) (stackFrames current) newShiftRegister
 
 -- Write a single memory cell at a given location.
 writeMemoryCell :: MemoryMap  -> Location -> MemoryCell -> MemoryMap

@@ -12,8 +12,6 @@ import Data.Char
 type ZChar = Word8
 
 
--- ZChar interpretation will depend upon the current shift register.
-data ShiftRegister = UPPER | LOWER | SYMBOL
 
 -- ZSCII Strings pack three 5-bit characters into a 16-bit word. The string terminator is the first bit of the WORD16. If it is 1, the string is terminated. So to read a full ZSCII string, we have to read until we find a character with a most significant bit true. 
 readZSCIIString :: MemoryMap -> Location -> [MemoryCell]
@@ -41,35 +39,56 @@ splitMemoryCellToZChar cell = let mod_cell = clearBit cell 15 -- need to clear t
 
 --
 
-convertZCharToASCIIChar :: ShiftRegister -> ZChar  -> Char
-convertZCharToASCIIChar LOWER zchar = chr ((fromIntegral zchar) + 91)
-convertZCharToASCIIChar UPPER zchar = chr ((fromIntegral zchar) + 59)
-convertZCharToASCIIChar SYMBOL 6 = ' '
-convertZCharToASCIIChar SYMBOL 7 = '0'
-convertZCharToASCIIChar SYMBOL 8 = '1'
-convertZCharToASCIIChar SYMBOL 9 = '2'
-convertZCharToASCIIChar SYMBOL 10 = '3'
-convertZCharToASCIIChar SYMBOL 11 = '4'
-convertZCharToASCIIChar SYMBOL 12 = '5'
-convertZCharToASCIIChar SYMBOL 13 = '6'
-convertZCharToASCIIChar SYMBOL 14 = '7'
-convertZCharToASCIIChar SYMBOL 15 = '8'
-convertZCharToASCIIChar SYMBOL 16 = '9'
-convertZCharToASCIIChar SYMBOL 17 = '.'
-convertZCharToASCIIChar SYMBOL 18 = ','
-convertZCharToASCIIChar SYMBOL 19 = '!'
-convertZCharToASCIIChar SYMBOL 20 = '?'
-convertZCharToASCIIChar SYMBOL 21 = '_'
-convertZCharToASCIIChar SYMBOL 22 = '#'
-convertZCharToASCIIChar SYMBOL 23 = '\''
-convertZCharToASCIIChar SYMBOL 24 = '"'
-convertZCharToASCIIChar SYMBOL 25 = '/'
-convertZCharToASCIIChar SYMBOL 26 = '\\'
-convertZCharToASCIIChar SYMBOL 27 = '<'
-convertZCharToASCIIChar SYMBOL 28 = '-'
-convertZCharToASCIIChar SYMBOL 29 = ':'
-convertZCharToASCIIChar SYMBOL 30 = '('
-convertZCharToASCIIChar SYMBOL 31 = ')'
+convertZCharToASCIICharGivenState :: (MemoryMap, Maybe Char) -> ZChar -> (MemoryMap, Maybe Char)
+convertZCharToASCIICharGivenState (state, _) zchar = let shiftR = (shiftRegister state)
+						         newShiftAndChar = convertZCharToASCIIChar shiftR zchar
+						     in  (updateShiftRegister state (fst newShiftAndChar), snd newShiftAndChar)
+
+
+convertZCharToASCIIChar :: ShiftRegister -> ZChar  -> (ShiftRegister, Maybe Char)
+convertZCharToASCIIChar LOWER zchar | zchar >= 6 = (LOWER, Just (chr ((fromIntegral zchar) + 91)))
+convertZCharToASCIIChar LOWER 2 = (UPPER_THEN_LOWER, Nothing)
+convertZCharToASCIIChar LOWER 3 = (SYMBOL_THEN_LOWER, Nothing)
+convertZCharToASCIIChar LOWER 4 = (UPPER, Nothing)
+convertZCharToASCIIChar LOWER 5 = (SYMBOL, Nothing)
+
+convertZCharToASCIIChar UPPER zchar | zchar >= 6 = (UPPER, Just (chr ((fromIntegral zchar) + 59)))
+convertZCharToASCIIChar UPPER 2 = (SYMBOL_THEN_UPPER, Nothing)
+convertZCharToASCIIChar UPPER 3 = (LOWER_THEN_UPPER, Nothing)
+convertZCharToASCIIChar UPPER 4 = (SYMBOL, Nothing)
+convertZCharToASCIIChar UPPER 5 = (LOWER, Nothing)
+
+convertZCharToASCIIChar SYMBOL 2 = (LOWER_THEN_SYMBOL, Nothing)
+convertZCharToASCIIChar SYMBOL 3 = (UPPER_THEN_SYMBOL, Nothing)
+convertZCharToASCIIChar SYMBOL 4 = (SYMBOL, Nothing)
+convertZCharToASCIIChar SYMBOL 5 = (LOWER, Nothing)
+
+convertZCharToASCIIChar SYMBOL 6 = (SYMBOL, Just ' ')
+convertZCharToASCIIChar SYMBOL 7 = (SYMBOL, Just '0')
+convertZCharToASCIIChar SYMBOL 8 = (SYMBOL, Just '1')
+convertZCharToASCIIChar SYMBOL 9 = (SYMBOL, Just '2')
+convertZCharToASCIIChar SYMBOL 10 = (SYMBOL, Just '3')
+convertZCharToASCIIChar SYMBOL 11 = (SYMBOL, Just '4')
+convertZCharToASCIIChar SYMBOL 12 = (SYMBOL, Just '5')
+convertZCharToASCIIChar SYMBOL 13 = (SYMBOL, Just '6')
+convertZCharToASCIIChar SYMBOL 14 = (SYMBOL, Just '7')
+convertZCharToASCIIChar SYMBOL 15 = (SYMBOL, Just '8')
+convertZCharToASCIIChar SYMBOL 16 = (SYMBOL, Just '9')
+convertZCharToASCIIChar SYMBOL 17 = (SYMBOL, Just '.')
+convertZCharToASCIIChar SYMBOL 18 = (SYMBOL, Just ',')
+convertZCharToASCIIChar SYMBOL 19 = (SYMBOL, Just '!')
+convertZCharToASCIIChar SYMBOL 20 = (SYMBOL, Just '?')
+convertZCharToASCIIChar SYMBOL 21 = (SYMBOL, Just '_')
+convertZCharToASCIIChar SYMBOL 22 = (SYMBOL, Just '#')
+convertZCharToASCIIChar SYMBOL 23 = (SYMBOL, Just '\'')
+convertZCharToASCIIChar SYMBOL 24 = (SYMBOL, Just '"')
+convertZCharToASCIIChar SYMBOL 25 = (SYMBOL, Just '/')
+convertZCharToASCIIChar SYMBOL 26 = (SYMBOL, Just '\\')
+convertZCharToASCIIChar SYMBOL 27 = (SYMBOL, Just '<')
+convertZCharToASCIIChar SYMBOL 28 = (SYMBOL, Just '-')
+convertZCharToASCIIChar SYMBOL 29 = (SYMBOL, Just ':')
+convertZCharToASCIIChar SYMBOL 30 = (SYMBOL, Just '(')
+convertZCharToASCIIChar SYMBOL 31 = (SYMBOL, Just ')')
 
 
 

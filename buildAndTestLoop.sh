@@ -1,3 +1,4 @@
+#!/bin/bash
 while (true) do
 #cabal clean configure build --enable-tests &> /dev/null
 date &> build.log
