@@ -1,6 +1,6 @@
 Name: haz-machine
 Version: 0.0.1
-Cabal-Version: >= 1.9.2
+Cabal-Version: == 1.9.2
 Build-Type: Simple
 
 test-suite haz-machine-tests
