@@ -4,7 +4,7 @@ Cabal-Version: == 1.9.2
 Build-Type: Simple
 
 test-suite haz-machine-tests
-    build-depends:    base, haz-machine, hspec == 2.2.3, QuickCheck == 2.8.2, vector
+    build-depends:    base, haz-machine, hspec == 2.2.3, QuickCheck == 2.8.2, vector, hood == 0.3
     hs-source-dirs:   test-suite
     main-is:          Spec.hs
     ghc-options:     

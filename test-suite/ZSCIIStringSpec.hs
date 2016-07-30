@@ -9,6 +9,8 @@ import Test.Hspec
 import Test.Hspec.QuickCheck
 import Data.Vector.Unboxed
 import Data.Maybe
+import Debug.Hood.Observe
+import Debug.Trace
 
 spec :: Spec
 spec = 
@@ -92,53 +94,54 @@ test_convertZCharToASCIIChar_symbol =
        "Convert zchar to ascii in symbol case"
 
 test_convertZCharToASCIIChar_lower_shiftUpper = 
-  let zchar = fromList [2,6,6]
+  let zchar =  [2,6,6]
       state = (MemoryMap (fromList []) [] 0 [] LOWER)
-      expected = "Aa"
-  in assertWithMessage (snd (evaluateZString state zchar) == Just 'a')
+      expected = [Just 'A', Just 'a']
+  in assertWithMessage ((evaluateZString state zchar) == expected)
                        "Convert zchar to ascii with upper case shift"
 
 test_convertZCharToASCIIChar_lower_shiftSymbol = 
-  let zchar = fromList [3,6,6]
+  let zchar =  [3,6,6]
       state = (MemoryMap (fromList []) [] 0 [] LOWER)
-      expected = "Aa"
-  in assertWithMessage (snd (evaluateZString state zchar) == Just 'a')
+      expected = [Just 'A', Just 'a']
+  in assertWithMessage ( (evaluateZString state zchar) == expected)
                        "Convert zchar to ascii with symbol case shift"
 
 test_convertZCharToASCIIChar_upper_shiftSymbol = 
-  let zchar = fromList [2,6,6]
+  let zchar =  [2,6,6]
       state = (MemoryMap (fromList []) [] 0 [] UPPER)
-      expected = "Aa"
-  in assertWithMessage (snd (evaluateZString state zchar) == Just 'a')
+      expected = [Just 'A', Just 'a']
+  in assertWithMessage ( (evaluateZString state zchar) == expected)
                        "Convert zchar to ascii with symbol case shift"
 
 test_convertZCharToASCIIChar_upper_shiftLower = 
-  let zchar = fromList [3,6,6]
+  let zchar =  [3,6,6]
       state = (MemoryMap (fromList []) [] 0 [] UPPER)
-      expected = "Aa"
-  in assertWithMessage (snd (evaluateZString state zchar) == Just 'a')
+      expected = [Just 'A', Just 'a']
+  in assertWithMessage ( (evaluateZString state zchar) == expected)
                        "Convert zchar to ascii with lower case shift"
 
 
 test_convertZCharToASCIIChar_symbol_shiftLower = 
-  let zchar = fromList [2,6,6]
+  let zchar =  [2,6,6]
       state = (MemoryMap (fromList []) [] 0 [] SYMBOL)
-      expected = "Aa"
-  in assertWithMessage (snd (evaluateZString state zchar) == Just 'a')
+      expected = [Just 'A', Just 'a']
+  in assertWithMessage ( (evaluateZString state zchar) == expected)
                        "Convert zchar to ascii with lower case shift"
 
 test_convertZCharToASCIIChar_symbol_shiftUpper = 
-  let zchar = fromList [3,6,6]
+  let zchar =  [3,6,6]
       state = (MemoryMap (fromList []) [] 0 [] SYMBOL)
-      expected = "Aa"
-  in assertWithMessage (snd (evaluateZString state zchar) == Just 'a')
+      expected = [Just 'A', Just 'a']
+  in assertWithMessage ( (evaluateZString state zchar) == expected)
                        "Convert zchar to ascii with upper case shift"
 
 
 --- evaluateZString state zchar = let x = (Prelude.map snd (Prelude.map (convertZCharToASCIICharGivenState state) zchar))
 ---				in if (x == Nothing) Prelude.map fromJust 
+evaluateZString :: MemoryMap -> [ZChar] -> [Maybe Char]
 evaluateZString state zchar = 
-  foldl' convertZCharToASCIICharGivenState (state,Nothing) zchar
+  Prelude.map snd (Prelude.map (convertZCharToASCIICharGivenState (state,Nothing)) zchar)
 
 --------- TEST CASES ----------
 assertWithMessage
