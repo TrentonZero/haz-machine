@@ -5,6 +5,7 @@ import Data.Word (Word16)
 import Data.Word (Word8)
 import Data.Bits
 import Data.Char
+import Debug.Trace
 
 -- ZChars are 5 bits, but will store in 8 bit words.
 type ZChar = Word8
@@ -35,14 +36,15 @@ splitMemoryCellToZChar cell =
 
 --convertZSCIIStringToZCharString :: ShiftRegister -> Memory -> [ZChar]
 --
+convertZCharToASCIICharGivenState'
+  :: (MemoryMap,Maybe Char) -> ZChar -> (MemoryMap,Maybe Char)
+convertZCharToASCIICharGivenState' (state, shift) zchar = trace ("calling convertZCharToASCIICharGivenState with state:" Prelude.++ show state Prelude.++ " shift: " Prelude.++ show shift Prelude.++ " zchar:" Prelude.++ show zchar Prelude.++ " result:" Prelude.++ show (convertZCharToASCIICharGivenState (state, shift) zchar)) (convertZCharToASCIICharGivenState (state, shift) zchar)
 convertZCharToASCIICharGivenState
   :: (MemoryMap,Maybe Char) -> ZChar -> (MemoryMap,Maybe Char)
 convertZCharToASCIICharGivenState (state,_) zchar = 
   let shiftR = (shiftRegister state)
       newShiftAndChar = convertZCharToASCIIChar shiftR zchar
-  in (updateShiftRegister state
-                          (fst newShiftAndChar)
-     ,snd newShiftAndChar)
+  in ((updateShiftRegister state $ fst newShiftAndChar), (snd newShiftAndChar))
 
 convertZCharToASCIIChar
   :: ShiftRegister -> ZChar -> (ShiftRegister,Maybe Char)
@@ -88,6 +90,10 @@ convertZCharToASCIIChar SYMBOL 28 = (SYMBOL,Just '-')
 convertZCharToASCIIChar SYMBOL 29 = (SYMBOL,Just ':')
 convertZCharToASCIIChar SYMBOL 30 = (SYMBOL,Just '(')
 convertZCharToASCIIChar SYMBOL 31 = (SYMBOL,Just ')')
-convertZCharToASCIIChar UPPER_THEN_LOWER a = (LOWER,snd (convertZCharToASCIIChar UPPER a))
-convertZCharToASCIIChar LOWER_THEN_UPPER a = (UPPER,snd (convertZCharToASCIIChar LOWER a))
+convertZCharToASCIIChar UPPER_THEN_LOWER zchar = (LOWER,snd (convertZCharToASCIIChar UPPER zchar))
+convertZCharToASCIIChar LOWER_THEN_UPPER zchar = (UPPER,snd (convertZCharToASCIIChar LOWER zchar))
+convertZCharToASCIIChar LOWER_THEN_SYMBOL zchar = (SYMBOL,snd (convertZCharToASCIIChar LOWER zchar))
+convertZCharToASCIIChar UPPER_THEN_SYMBOL zchar = (SYMBOL,snd (convertZCharToASCIIChar UPPER zchar))
+convertZCharToASCIIChar SYMBOL_THEN_LOWER zchar = (LOWER,snd (convertZCharToASCIIChar SYMBOL zchar))
+convertZCharToASCIIChar SYMBOL_THEN_UPPER zchar = (UPPER,snd (convertZCharToASCIIChar SYMBOL zchar))
 
