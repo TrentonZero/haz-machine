@@ -1,3 +1,4 @@
 #!/bin/bash
 date 
-cabal bench  --benchmark-options="-o report.html" 
+stack bench --benchmark-arguments="-o report.html" 
+#cabal bench  --benchmark-options="-o report.html" 
