@@ -18,7 +18,13 @@ spec =
   do describe "OpCodes Tests" $
        do test_QUIT
           test_advance_pc
+          test_nop
 
+test_nop =
+  let memory = defaultMemoryMap
+      expected = 1
+  in assertWithMessage (programCounter (processOpCode NOP memory) == expected)
+                       "Should advance the program counter and nothing else"
 test_advance_pc =
   let memory = defaultMemoryMap
       expected = 1
