@@ -41,6 +41,8 @@ data ShiftRegister
 --		head of the "stackFrames". When a routine exits, the current stack
 --		should be discarded and the current head of stackFrames should be popped
 --		and return to its state.
+--      shiftRegister : Register that tracks the current alphabet to use.
+--      shouldTerminate : Should the game terminate on the next game loop (because the quit opcode is called for one example)
 data MemoryMap =
   MemoryMap {memory :: Memory
             ,stack :: [MemoryCell]
