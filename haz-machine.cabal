@@ -20,5 +20,5 @@ benchmark criterion
 
 library
     hs-source-dirs: src
-    Exposed-Modules: MemoryMap, ZSCIIString
+    Exposed-Modules: MemoryMap, ZSCIIString, OpCodes
     Build-Depends: base >= 2.0, vector, array

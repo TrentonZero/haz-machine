@@ -40,14 +40,28 @@ data ShiftRegister
 --		a new stack is created and the current stack should be pushed onto the
 --		head of the "stackFrames". When a routine exits, the current stack
 --		should be discarded and the current head of stackFrames should be popped
---		and return to its state.  
+--		and return to its state.
 data MemoryMap =
   MemoryMap {memory :: Memory
             ,stack :: [MemoryCell]
             ,programCounter :: Int
             ,stackFrames :: [[MemoryCell]]
-            ,shiftRegister :: ShiftRegister}
+            ,shiftRegister :: ShiftRegister
+            ,shouldTerminate :: Bool}
   deriving (Show,Eq)
+
+defaultMemoryMap = MemoryMap {memory = (V.fromList []), stack = [], programCounter = 0, stackFrames = [], shiftRegister = LOWER, shouldTerminate = False} 
+
+updateShouldTerminate 
+  :: MemoryMap -> Bool -> MemoryMap
+updateShouldTerminate current flag =
+  MemoryMap (memory current)
+            (stack current)
+            (programCounter current)
+            (stackFrames current)
+            (shiftRegister current)
+            flag
+
 
 updateStack
   :: MemoryMap -> [MemoryCell] -> MemoryMap
@@ -57,6 +71,7 @@ updateStack current newStack =
             (programCounter current)
             (stackFrames current)
             (shiftRegister current)
+            (shouldTerminate current)
 
 updateMemoryMap
   :: MemoryMap -> Memory -> MemoryMap
@@ -66,6 +81,7 @@ updateMemoryMap current newMemory =
             (programCounter current)
             (stackFrames current)
             (shiftRegister current)
+            (shouldTerminate current)
 
 updateShiftRegister
   :: MemoryMap -> ShiftRegister -> MemoryMap
@@ -75,6 +91,7 @@ updateShiftRegister current newShiftRegister =
             (programCounter current)
             (stackFrames current)
             newShiftRegister
+            (shouldTerminate current)
 
 -- Write a single memory cell at a given location.
 writeMemoryCell
