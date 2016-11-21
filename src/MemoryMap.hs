@@ -65,12 +65,26 @@ updateShouldTerminate current flag =
             flag
 
 
+
+advanceProgramCounter :: MemoryMap -> MemoryMap
+advanceProgramCounter current = updateProgramCounter current ((programCounter current)+1)
+
 updateStack
   :: MemoryMap -> [MemoryCell] -> MemoryMap
 updateStack current newStack = 
   MemoryMap (memory current)
             newStack
             (programCounter current)
+            (stackFrames current)
+            (shiftRegister current)
+            (shouldTerminate current)
+
+updateProgramCounter
+  :: MemoryMap -> Int -> MemoryMap
+updateProgramCounter current newCounter = 
+  MemoryMap (memory current)
+            (stack current)
+            newCounter
             (stackFrames current)
             (shiftRegister current)
             (shouldTerminate current)

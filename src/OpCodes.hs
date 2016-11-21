@@ -13,9 +13,15 @@ import System.Exit
 
 data OpCode
   = QUIT
+  | NEW_LINE
   deriving (Show, Eq)
 
 
-processOpCode 
+processOpCode
   :: OpCode -> MemoryMap -> MemoryMap
-processOpCode QUIT state = updateShouldTerminate state True 
+processOpCode x y = advanceProgramCounter (processOpCodeInternal x y)
+
+
+processOpCodeInternal
+  :: OpCode -> MemoryMap -> MemoryMap
+processOpCodeInternal QUIT state = updateShouldTerminate state True
