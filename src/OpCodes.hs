@@ -15,6 +15,7 @@ data OpCode
   = QUIT
   | NEW_LINE
   | NOP
+  | POP
   deriving (Show, Eq)
 
 
@@ -28,7 +29,7 @@ processOpCodeInternal
 processOpCodeInternal QUIT state = updateShouldTerminate state True
 processOpCodeInternal NOP state = state
 processOpCodeInternal NEW_LINE state = appendToStream1 state "\n"
-
+processOpCodeInternal POP state = snd (popFromStack state)
 
 
 

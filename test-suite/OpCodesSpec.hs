@@ -18,6 +18,7 @@ spec =
   do describe "OpCodes Tests" $
        do test_QUIT
           test_advance_pc
+          test_pop
           test_nop
           test_newLine
 
@@ -28,6 +29,11 @@ test_nop =
                        "Should advance the program counter and nothing else"
 
 
+test_pop =
+  let memory = defaultMemoryMap { stack = [1,2,3] }
+      expected = [2,3]
+  in assertWithMessage (stack (processOpCode POP memory) == expected)
+                       "Should pop top value off the stack" 
 
 test_newLine =
   let memory = defaultMemoryMap
