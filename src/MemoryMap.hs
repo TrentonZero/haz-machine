@@ -49,10 +49,11 @@ data MemoryMap =
             ,programCounter :: Int
             ,stackFrames :: [[MemoryCell]]
             ,shiftRegister :: ShiftRegister
-            ,shouldTerminate :: Bool}
+            ,shouldTerminate :: Bool
+            ,stream1 :: [Char]}
   deriving (Show,Eq)
 
-defaultMemoryMap = MemoryMap {memory = (V.fromList []), stack = [], programCounter = 0, stackFrames = [], shiftRegister = LOWER, shouldTerminate = False} 
+defaultMemoryMap = MemoryMap {memory = (V.fromList []), stack = [], programCounter = 0, stackFrames = [], shiftRegister = LOWER, shouldTerminate = False, stream1 = []} 
 
 updateShouldTerminate 
   :: MemoryMap -> Bool -> MemoryMap
@@ -63,7 +64,17 @@ updateShouldTerminate current flag =
             (stackFrames current)
             (shiftRegister current)
             flag
+            (stream1 current)
 
+appendToStream1 :: MemoryMap -> [Char] -> MemoryMap
+appendToStream1 current string =
+  MemoryMap (memory current)
+            (stack current)
+            (programCounter current)
+            (stackFrames current)
+            (shiftRegister current)
+            (shouldTerminate current)
+            ((stream1 current) ++ string)
 
 
 advanceProgramCounter :: MemoryMap -> MemoryMap
@@ -78,6 +89,7 @@ updateStack current newStack =
             (stackFrames current)
             (shiftRegister current)
             (shouldTerminate current)
+            (stream1 current)
 
 updateProgramCounter
   :: MemoryMap -> Int -> MemoryMap
@@ -88,6 +100,7 @@ updateProgramCounter current newCounter =
             (stackFrames current)
             (shiftRegister current)
             (shouldTerminate current)
+            (stream1 current)
 
 updateMemoryMap
   :: MemoryMap -> Memory -> MemoryMap
@@ -98,6 +111,7 @@ updateMemoryMap current newMemory =
             (stackFrames current)
             (shiftRegister current)
             (shouldTerminate current)
+            (stream1 current)
 
 updateShiftRegister
   :: MemoryMap -> ShiftRegister -> MemoryMap
@@ -108,6 +122,7 @@ updateShiftRegister current newShiftRegister =
             (stackFrames current)
             newShiftRegister
             (shouldTerminate current)
+            (stream1 current)
 
 -- Write a single memory cell at a given location.
 writeMemoryCell

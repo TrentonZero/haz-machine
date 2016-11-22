@@ -59,12 +59,12 @@ test_writeMemory_base =
   let memory = defaultMemoryMap {memory = fromList [1..10]}
       location = 2
       cells = [0..3]
-      expected = MemoryMap (fromList ([1,2,0] Prelude.++ [1..3] Prelude.++ [7..10])) [] 0 [] LOWER False
+      expected = MemoryMap (fromList ([1,2,0] Prelude.++ [1..3] Prelude.++ [7..10])) [] 0 [] LOWER False []
   in assertWithMessage (writeMemory memory location cells == expected)
                        "Write Memory range"
 
 test_pushToStack = 
-  let stack = MemoryMap (fromList [100]) [] 0 [] LOWER True
+  let stack = MemoryMap (fromList [100]) [] 0 [] LOWER True []
       cell = 1000
       expected = 
         MemoryMap (fromList [100])
@@ -73,6 +73,7 @@ test_pushToStack =
                   []
                   LOWER
                   True
+                  []
   in assertWithMessage (pushToStack stack cell == expected)
                        "Pushing onto empty stack"
 
@@ -84,6 +85,7 @@ test_pushToPopulatedStack =
                   []
                   LOWER
                   True
+                  []
       cell = 1000
       expected = 
         MemoryMap (fromList [])
@@ -92,6 +94,7 @@ test_pushToPopulatedStack =
                   []
                   LOWER
                   True
+                  []
   in assertWithMessage (pushToStack stack cell == expected)
                        "Pushing onto populated stack"
 
@@ -103,6 +106,7 @@ test_popFromPopulatedStack =
                   []
                   LOWER
                   True
+                  []
       expected = 
         (Just 1000
         ,MemoryMap (fromList [])
@@ -110,7 +114,8 @@ test_popFromPopulatedStack =
                    0
                    []
                    LOWER
-                   True)
+                   True
+                   [])
   in assertWithMessage (popFromStack stack == expected)
                        "Popping from populated stack"
 
@@ -122,13 +127,14 @@ test_popFromSmallStack =
                   []
                   LOWER
                   True
-      expected = (Just 1000,MemoryMap (fromList []) [] 0 [] LOWER True)
+                  []
+      expected = (Just 1000,MemoryMap (fromList []) [] 0 [] LOWER True [])
   in assertWithMessage (popFromStack stack == expected)
                        "Popping from populated stack"
 
 test_popFromEmptyStack = 
-  let stack = MemoryMap (fromList [100]) [] 0 [] LOWER True
-      expected = (Nothing,MemoryMap (fromList [100]) [] 0 [] LOWER True)
+  let stack = MemoryMap (fromList [100]) [] 0 [] LOWER True []
+      expected = (Nothing,MemoryMap (fromList [100]) [] 0 [] LOWER True [])
   in assertWithMessage (popFromStack stack == expected)
                        "Popping from empty stack"
 
@@ -140,6 +146,7 @@ test_peekFromPopulatedStack =
                   []
                   LOWER
                   True
+                  []
       expected = 
         (Just 1000
         ,MemoryMap (fromList [])
@@ -147,7 +154,8 @@ test_peekFromPopulatedStack =
                    0
                    []
                    LOWER
-                   True)
+                   True
+                   [])
   in assertWithMessage (peekFromStack stack == expected)
                        "peeking from peekulated stack"
 
@@ -159,6 +167,7 @@ test_peekFromSmallStack =
                   []
                   LOWER
                   True
+                  []
       expected = 
         (Just 1000
         ,MemoryMap (fromList [])
@@ -166,13 +175,14 @@ test_peekFromSmallStack =
                    0
                    []
                    LOWER
-                   True)
+                   True
+                   [])
   in assertWithMessage (peekFromStack stack == expected)
                        "peeking from peekulated stack"
 
 test_peekFromEmptyStack = 
-  let stack = MemoryMap (fromList [100]) [] 0 [] LOWER True
-      expected = (Nothing,MemoryMap (fromList [100]) [] 0 [] LOWER True)
+  let stack = MemoryMap (fromList [100]) [] 0 [] LOWER True []
+      expected = (Nothing,MemoryMap (fromList [100]) [] 0 [] LOWER True [])
   in assertWithMessage (peekFromStack stack == expected)
                        "peeking from empty stack"
 
@@ -184,6 +194,7 @@ test_updatePopulatedStack =
                   []
                   LOWER
                   True
+                  []
       expected = 
         MemoryMap (fromList [])
                   [1001,500,122]
@@ -191,6 +202,7 @@ test_updatePopulatedStack =
                   []
                   LOWER
                   True
+                  []
   in assertWithMessage (updateStackHead stack (+ 1) == expected)
                        "updating populated stack"
 
@@ -202,19 +214,21 @@ test_updateSmallStack =
                   []
                   LOWER
                   True
+                  []
       expected = 
         (MemoryMap (fromList [])
                    [1001]
                    0
                    []
                    LOWER
-                   True)
+                   True
+                   [])
   in assertWithMessage (updateStackHead stack (+ 1) == expected)
                        "updating small stack"
 
 test_updateEmptyStack = 
-  let stack = MemoryMap (fromList [100]) [] 0 [] LOWER True
-      expected = MemoryMap (fromList [100]) [] 0 [] LOWER True
+  let stack = MemoryMap (fromList [100]) [] 0 [] LOWER True []
+      expected = MemoryMap (fromList [100]) [] 0 [] LOWER True []
   in assertWithMessage (updateStackHead stack (+ 1) == expected)
                        "updating empty stack"
 

@@ -19,7 +19,7 @@ data OpCode
 
 
 processOpCode
-  :: OpCode -> MemoryMap -> MemoryMap
+  :: OpCode -> MemoryMap -> MemoryMap 
 processOpCode x y = advanceProgramCounter (processOpCodeInternal x y)
 
 
@@ -27,3 +27,9 @@ processOpCodeInternal
   :: OpCode -> MemoryMap -> MemoryMap
 processOpCodeInternal QUIT state = updateShouldTerminate state True
 processOpCodeInternal NOP state = state
+processOpCodeInternal NEW_LINE state = appendToStream1 state "\n"
+
+
+
+
+

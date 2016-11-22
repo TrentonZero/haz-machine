@@ -19,20 +19,31 @@ spec =
        do test_QUIT
           test_advance_pc
           test_nop
+          test_newLine
 
 test_nop =
   let memory = defaultMemoryMap
       expected = 1
   in assertWithMessage (programCounter (processOpCode NOP memory) == expected)
                        "Should advance the program counter and nothing else"
+
+
+
+test_newLine =
+  let memory = defaultMemoryMap
+      expected = "\n"
+  in assertWithMessage (stream1 (processOpCode NEW_LINE memory) == expected)
+                       "new line should advance the program counter"
+
 test_advance_pc =
   let memory = defaultMemoryMap
       expected = 1
   in assertWithMessage (programCounter (processOpCode QUIT memory) == expected)
                        "Should advance the program counter"
 
-test_QUIT = 
-  let memory = MemoryMap (fromList [1,2,3,4,5,6,7,0xFFFF,8,9,10]) [] 0 [] LOWER False
+
+test_QUIT =
+  let memory = MemoryMap (fromList [1,2,3,4,5,6,7,0xFFFF,8,9,10]) [] 0 [] LOWER False []
       expected = True
   in assertWithMessage (shouldTerminate (processOpCode QUIT memory) == expected)
                        "Should set the terminate flag so that MAIN IO Can kill it"
