@@ -4,7 +4,7 @@ Cabal-Version: == 1.9.2
 Build-Type: Simple
 
 test-suite haz-machine-tests
-    build-depends:    base, haz-machine, hspec == 2.2.3, QuickCheck == 2.8.2, vector, hood == 0.3
+    build-depends:    base, haz-machine, hspec == 2.2.3, QuickCheck == 2.8.2, vector == 0.11.0.0, hood == 0.3
     hs-source-dirs:   test-suite
     main-is:          Spec.hs
     ghc-options:     
@@ -21,4 +21,4 @@ benchmark criterion
 library
     hs-source-dirs: src
     Exposed-Modules: MemoryMap, ZSCIIString, OpCodes
-    Build-Depends: base >= 2.0, vector, array
+    Build-Depends: base >= 2.0, vector == 0.11.0.0, array
