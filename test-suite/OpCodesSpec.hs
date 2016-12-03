@@ -24,6 +24,7 @@ spec =
           test_INC
           test_INC_STACK
           test_DEC
+          test_DEC_STACK
 
 test_nop =
   let memory = defaultMemoryMap

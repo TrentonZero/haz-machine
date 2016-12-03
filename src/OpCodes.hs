@@ -44,7 +44,7 @@ processOpCodeInternal (INC var) state = setVar state (var-1) ((getVar state (var
 
 processOpCodeInternal (DEC 0) state =
      let pop = popFromStack state
-         val = (fromJust (fst pop)) + 1
+         val = (fromJust (fst pop)) - 1
          newState = snd pop
      in pushToStack newState val
 processOpCodeInternal (DEC var) state = setVar state (var-1) ((getVar state (var-1)) - 1)
