@@ -19,6 +19,7 @@ data OpCode
   | POP
   | INC Int
   | DEC Int
+  | JUMP Int
   deriving (Show, Eq)
 
 
@@ -35,6 +36,11 @@ processOpCodeInternal QUIT state = updateShouldTerminate state True
 processOpCodeInternal NOP state = state
 processOpCodeInternal NEW_LINE state = appendToStream1 state "\n"
 processOpCodeInternal POP state = snd (popFromStack state)
+processOpCodeInternal (JUMP offset) state =
+  -- minus 1 because we already advanced one for this operation
+  let newPC = ((programCounter state) + offset - 1)
+  in updateProgramCounter state newPC
+
 processOpCodeInternal (INC 0) state =
      let pop = popFromStack state
          val = (fromJust (fst pop)) + 1
@@ -48,5 +54,7 @@ processOpCodeInternal (DEC 0) state =
          newState = snd pop
      in pushToStack newState val
 processOpCodeInternal (DEC var) state = setVar state (var-1) ((getVar state (var-1)) - 1)
+
+
 
 
