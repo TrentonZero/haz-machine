@@ -50,10 +50,11 @@ data MemoryMap =
             ,stackFrames :: [[MemoryCell]]
             ,shiftRegister :: ShiftRegister
             ,shouldTerminate :: Bool
+            ,vars :: [Int]
             ,stream1 :: [Char]}
   deriving (Show,Eq)
 
-defaultMemoryMap = MemoryMap {memory = (V.fromList []), stack = [], programCounter = 0, stackFrames = [], shiftRegister = LOWER, shouldTerminate = False, stream1 = []} 
+defaultMemoryMap = MemoryMap {memory = (V.fromList []), stack = [], programCounter = 0, stackFrames = [], shiftRegister = LOWER, shouldTerminate = False, vars = take 16 (repeat 0), stream1 = []} 
 
 updateShouldTerminate 
   :: MemoryMap -> Bool -> MemoryMap
@@ -64,6 +65,7 @@ updateShouldTerminate current flag =
             (stackFrames current)
             (shiftRegister current)
             flag
+            (vars current)
             (stream1 current)
 
 appendToStream1 :: MemoryMap -> [Char] -> MemoryMap
@@ -74,6 +76,7 @@ appendToStream1 current string =
             (stackFrames current)
             (shiftRegister current)
             (shouldTerminate current)
+            (vars current)
             ((stream1 current) ++ string)
 
 
@@ -89,6 +92,7 @@ updateStack current newStack =
             (stackFrames current)
             (shiftRegister current)
             (shouldTerminate current)
+            (vars current)
             (stream1 current)
 
 updateProgramCounter
@@ -100,6 +104,7 @@ updateProgramCounter current newCounter =
             (stackFrames current)
             (shiftRegister current)
             (shouldTerminate current)
+            (vars current)
             (stream1 current)
 
 updateMemoryMap
@@ -111,17 +116,34 @@ updateMemoryMap current newMemory =
             (stackFrames current)
             (shiftRegister current)
             (shouldTerminate current)
+            (vars current)
             (stream1 current)
 
 updateShiftRegister
   :: MemoryMap -> ShiftRegister -> MemoryMap
-updateShiftRegister current newShiftRegister = 
+updateShiftRegister current newShiftRegister =
   MemoryMap (memory current)
             (stack current)
             (programCounter current)
             (stackFrames current)
             newShiftRegister
             (shouldTerminate current)
+            (vars current)
+            (stream1 current)
+
+getVar :: MemoryMap -> Int -> Int
+getVar current var = ((vars current) !! var )
+
+setVar :: MemoryMap -> Int -> Int -> MemoryMap
+setVar current location var =
+  let triple = splitAt3 location (location+1) (vars current)
+  in MemoryMap (memory current)
+            (stack current)
+            (programCounter current)
+            (stackFrames current)
+            (shiftRegister current)
+            (shouldTerminate current)
+            (((fst3 triple) ++ [var]) ++ (thrd3 triple))
             (stream1 current)
 
 -- Write a single memory cell at a given location.

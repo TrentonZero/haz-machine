@@ -21,6 +21,9 @@ spec =
           test_pop
           test_nop
           test_newLine
+          test_INC
+          test_INC_STACK
+          test_DEC
 
 test_nop =
   let memory = defaultMemoryMap
@@ -49,10 +52,41 @@ test_advance_pc =
 
 
 test_QUIT =
-  let memory = MemoryMap (fromList [1,2,3,4,5,6,7,0xFFFF,8,9,10]) [] 0 [] LOWER False []
+  let memory = defaultMemoryMap { memory = fromList [1,2,3,4,5,6,7,0xFFFF,8,9,10] } 
       expected = True
   in assertWithMessage (shouldTerminate (processOpCode QUIT memory) == expected)
                        "Should set the terminate flag so that MAIN IO Can kill it"
+
+test_INC =
+  let memory = defaultMemoryMap { vars = [0] }
+      expected = memory { vars = [1], programCounter = 1 }
+      result = processOpCode (INC 1) memory
+  in assertWithMessage (result == expected)
+                       ("Should increment variable. \n\tresult: " Prelude.++ show result Prelude.++ " \n\texpected: " Prelude.++ show expected)
+
+test_INC_STACK =
+  let memory = defaultMemoryMap { vars = [0], stack = [1,2,3] }
+      expected = memory { vars = [0], stack = [2,2,3], programCounter = 1 }
+      result = processOpCode (INC 0) memory
+  in assertWithMessage (result == expected)
+                       ("Should increment head of stack. \n\tresult: " Prelude.++ show result Prelude.++ " \n\texpected: " Prelude.++ show expected)
+
+test_DEC =
+  let memory = defaultMemoryMap { vars = [100] }
+      expected = memory { vars = [99], programCounter = 1 }
+      result = processOpCode (DEC 1) memory
+  in assertWithMessage (result == expected)
+                       ("Should decrement variable. \n\tresult: " Prelude.++ show result Prelude.++ " \n\texpected: " Prelude.++ show expected)
+
+
+test_DEC_STACK =
+  let memory = defaultMemoryMap { vars = [0], stack = [3,2,1] }
+      expected = memory { vars = [0], stack = [2,2,1], programCounter = 1 }
+      result = processOpCode (DEC 0) memory
+  in assertWithMessage (result == expected)
+                       ("Should decrement head of stack. \n\tresult: " Prelude.++ show result Prelude.++ " \n\texpected: " Prelude.++ show expected)
+
+
 
 
 --------- TEST CASES ----------
