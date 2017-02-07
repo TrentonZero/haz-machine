@@ -28,6 +28,7 @@ spec =
           test_JUMP_negative
           test_JUMP_zero
           test_PRINT_ADDR_aaa
+          test_PRINT_ADDR_respect_term
 
 test_nop =
   let memory = defaultMemoryMap
@@ -104,6 +105,11 @@ test_PRINT_ADDR_aaa =
       result = processOpCode (PRINT_ADDR 0) memory
   in assertWithMessage result expected "should append 'aaaaaa' to stream1"
 
+test_PRINT_ADDR_respect_term =
+  let memory = defaultMemoryMap { memory = fromList [6342, 39110, 6342], shiftRegister = LOWER}
+      expected = memory { stream1 = "aaaaaa", programCounter = 1}
+      result = processOpCode (PRINT_ADDR 0) memory
+  in assertWithMessage result expected "should append 'aaaaaa' to stream1, respecting the string terminator"
 
 --------- TEST CASES ----------
 assertWithMessage result expected message =
