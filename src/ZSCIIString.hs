@@ -2,13 +2,25 @@ module ZSCIIString where
 
 import           Data.Bits
 import           Data.Char
+import           Data.Maybe
 import           Data.Word   (Word16)
 import           Data.Word   (Word8)
 import           Debug.Trace
 import           MemoryMap
 
+
 -- ZChars are 5 bits, but will store in 8 bit words.
 type ZChar = Word8
+
+-- return an ascii string
+readASCIIString
+   :: MemoryMap -> Location -> [Char]
+readASCIIString current loc =
+  let zscii_mc = readZSCIIString current loc
+      zscii = concat $ map splitMemoryCellToZChar zscii_mc
+      ascii = catMaybes $ evaluateZString' current zscii
+  in ascii
+
 
 -- ZSCII Strings pack three 5-bit characters into a 16-bit word. The string terminator is the first bit of the WORD16. If it is 1, the string is terminated. So to read a full ZSCII string, we have to read until we find a character with a most significant bit true.
 readZSCIIString
@@ -97,3 +109,13 @@ convertZCharToASCIIChar UPPER_THEN_SYMBOL zchar = (SYMBOL,snd (convertZCharToASC
 convertZCharToASCIIChar SYMBOL_THEN_LOWER zchar = (LOWER,snd (convertZCharToASCIIChar SYMBOL zchar))
 convertZCharToASCIIChar SYMBOL_THEN_UPPER zchar = (UPPER,snd (convertZCharToASCIIChar SYMBOL zchar))
 
+
+--- evaluateZString state zchar = let x = (Prelude.map snd (Prelude.map (convertZCharToASCIICharGivenState state) zchar))
+---				in if (x == Nothing) Prelude.map fromJust
+evaluateZString' state zchar = trace ("calling evaluateZString with state:" Prelude.++ show state Prelude.++ " zchar:" Prelude.++ show zchar Prelude.++ " result: "  Prelude.++ show (evaluateZString state zchar)) (evaluateZString state zchar)
+evaluateZString :: MemoryMap -> [ZChar] -> [Maybe Char]
+evaluateZString state [] = error "empty zstring"
+evaluateZString state [x] = [snd (convertZCharToASCIICharGivenState (state, Nothing) x)]
+evaluateZString state (x:xs) =
+  let newstate = fst (convertZCharToASCIICharGivenState (state, Nothing) x)
+  in evaluateZString state [x] Prelude.++ evaluateZString newstate xs

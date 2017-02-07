@@ -16,6 +16,7 @@ spec =
   do describe "ZSCIIString Tests" $
        do test_readZSCIIString_base
           test_readZSCIIString_noterm
+          test_readASCIIString_base
           test_splitMemoryCellToZChar
           test_splitMemoryCellToZChar_with_term
           test_convertZCharToASCIIChar_lower
@@ -27,6 +28,7 @@ spec =
           test_convertZCharToASCIIChar_upper_shiftLower
           test_convertZCharToASCIIChar_symbol_shiftLower
           test_convertZCharToASCIIChar_symbol_shiftUpper
+
 
 test_readZSCIIString_base =
   let memory = defaultMemoryMap { memory = (fromList [1,2,3,4,5,6,7,0xFFFF,8,9,10]), shiftRegister = LOWER}
@@ -42,6 +44,15 @@ test_readZSCIIString_noterm =
   in assertWithMessage (readZSCIIString memory location == expected_memory)
                        "Read ZCSII string from memory when terminator is missing"
 
+
+test_readASCIIString_base =
+  let memory = defaultMemoryMap { memory = (fromList [6342,39110]), shiftRegister = LOWER}
+      location = 0
+      expected = "aaaaaa"  -- 6342 is "aaa" and 39110 is "aaa" with string term. need to compile a better sample
+  in assertWithMessage ((readASCIIString memory location) == expected)
+                       "Read ZCSII string from memory and parse into ASCII"
+
+
 test_splitMemoryCellToZChar =
   let cell = 6342  -- 6342 = 00110-00110-00110, or 6 6 6
       expected = [6,6,6]
@@ -53,6 +64,9 @@ test_splitMemoryCellToZChar_with_term =
       expected = [6,6,6]
   in assertWithMessage (splitMemoryCellToZChar cell == expected)
                        "Split a single memory cell into 3 zchar when last char has a line terminator"
+
+
+
 
 test_convertZCharToASCIIChar_lower =
   let zchar =
@@ -135,15 +149,6 @@ test_convertZCharToASCIIChar_symbol_shiftUpper =
                        "Convert zchar to ascii with upper case shift"
 
 
---- evaluateZString state zchar = let x = (Prelude.map snd (Prelude.map (convertZCharToASCIICharGivenState state) zchar))
----				in if (x == Nothing) Prelude.map fromJust
-evaluateZString' state zchar = trace ("calling evaluateZString with state:" Prelude.++ show state Prelude.++ " zchar:" Prelude.++ show zchar Prelude.++ " result: "  Prelude.++ show (evaluateZString state zchar)) (evaluateZString state zchar)
-evaluateZString :: MemoryMap -> [ZChar] -> [Maybe Char]
-evaluateZString state [] = error "empty zstring"
-evaluateZString state [x] = [snd (convertZCharToASCIICharGivenState (state, Nothing) x)]
-evaluateZString state (x:xs) =
-  let newstate = fst (convertZCharToASCIICharGivenState (state, Nothing) x)
-  in evaluateZString state [x] Prelude.++ evaluateZString newstate xs
 
 
 --------- TEST CASES ----------
