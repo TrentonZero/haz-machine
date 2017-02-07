@@ -1,19 +1,19 @@
 -- test-suite/OpCodesSpec.hs
-module OpCodesSpec 
+module OpCodesSpec
   (spec)
   where
 
-import ZSCIIString
-import MemoryMap
-import OpCodes
-import Test.Hspec
-import Test.Hspec.QuickCheck
-import Data.Vector.Unboxed
-import Data.Maybe
-import Debug.Trace
+import           Data.Maybe
+import           Data.Vector.Unboxed
+import           Debug.Trace
+import           MemoryMap
+import           OpCodes
+import           Test.Hspec
+import           Test.Hspec.QuickCheck
+import           ZSCIIString
 
 spec :: Spec
-spec = 
+spec =
   parallel $
   do describe "OpCodes Tests" $
        do test_QUIT
@@ -93,14 +93,14 @@ test_JUMP_negative =
 
 test_JUMP_zero =
   let memory = defaultMemoryMap { programCounter = 132}
-      expected = memory 
+      expected = memory
       result = processOpCode (JUMP 0) memory
   in assertWithMessage result expected "Should leave program counter unchanged."
 
 --------- TEST CASES ----------
 assertWithMessage result expected message =
   let messageL = message Prelude.++ "\n\tresult: " Prelude.++ show result Prelude.++ "\n\texpected: " Prelude.++ show expected
-  in it messageL $ do (result == expected) 
+  in it messageL $ do (result == expected)
 
 assert :: Bool -> SpecWith ()
 assert condition = it "Get off your butt and write a message!" $ do condition

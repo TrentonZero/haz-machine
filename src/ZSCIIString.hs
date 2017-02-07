@@ -1,33 +1,33 @@
 module ZSCIIString where
 
-import MemoryMap
-import Data.Word (Word16)
-import Data.Word (Word8)
-import Data.Bits
-import Data.Char
-import Debug.Trace
+import           Data.Bits
+import           Data.Char
+import           Data.Word   (Word16)
+import           Data.Word   (Word8)
+import           Debug.Trace
+import           MemoryMap
 
 -- ZChars are 5 bits, but will store in 8 bit words.
 type ZChar = Word8
 
--- ZSCII Strings pack three 5-bit characters into a 16-bit word. The string terminator is the first bit of the WORD16. If it is 1, the string is terminated. So to read a full ZSCII string, we have to read until we find a character with a most significant bit true. 
+-- ZSCII Strings pack three 5-bit characters into a 16-bit word. The string terminator is the first bit of the WORD16. If it is 1, the string is terminated. So to read a full ZSCII string, we have to read until we find a character with a most significant bit true.
 readZSCIIString
   :: MemoryMap -> Location -> [MemoryCell]
-readZSCIIString current loc = 
+readZSCIIString current loc =
   let cell = readMemoryCell current loc
   in case (cell) of
        Nothing -> []
-       Just cell -> 
+       Just cell ->
          case (testBit cell 15) of
            True -> [cell]
-           False -> 
+           False ->
              cell :
              readZSCIIString current
                              (loc + 1)
 
 --
 splitMemoryCellToZChar :: MemoryCell -> [ZChar]
-splitMemoryCellToZChar cell = 
+splitMemoryCellToZChar cell =
   let mod_cell = clearBit cell 15 -- need to clear the bit that serves as new-line indicator
       zchar1 = fromIntegral (shiftR mod_cell 10) :: Word8
       zchar2 = fromIntegral (shiftR (shiftL mod_cell 5) 10) :: Word8
@@ -41,7 +41,7 @@ convertZCharToASCIICharGivenState'
 convertZCharToASCIICharGivenState' (state, shift) zchar = trace ("calling convertZCharToASCIICharGivenState with state:" Prelude.++ show state Prelude.++ " shift: " Prelude.++ show shift Prelude.++ " zchar:" Prelude.++ show zchar Prelude.++ " result:" Prelude.++ show (convertZCharToASCIICharGivenState (state, shift) zchar)) (convertZCharToASCIICharGivenState (state, shift) zchar)
 convertZCharToASCIICharGivenState
   :: (MemoryMap,Maybe Char) -> ZChar -> (MemoryMap,Maybe Char)
-convertZCharToASCIICharGivenState (state,_) zchar = 
+convertZCharToASCIICharGivenState (state,_) zchar =
   let shiftR = (shiftRegister state)
       newShiftAndChar = convertZCharToASCIIChar shiftR zchar
   in ((updateShiftRegister state $ fst newShiftAndChar), (snd newShiftAndChar))

@@ -1,16 +1,16 @@
 module OpCodes where
 
-import Data.Word (Word16)
-import Data.Bits
-import Data.Maybe
+import           Control.Monad
+import           Control.Monad.ST
+import           Data.Bits
+import           Data.Maybe
+import           Data.STRef
 import qualified Data.Vector.Unboxed as V
-import Control.Monad.ST
-import Control.Monad
-import Data.STRef
-import MemoryMap
-import ZSCIIString
-import System.Exit
-import Debug.Trace
+import           Data.Word           (Word16)
+import           Debug.Trace
+import           MemoryMap
+import           System.Exit
+import           ZSCIIString
 
 data OpCode
   = QUIT
@@ -24,7 +24,7 @@ data OpCode
 
 
 processOpCode
-  :: OpCode -> MemoryMap -> MemoryMap 
+  :: OpCode -> MemoryMap -> MemoryMap
 processOpCode x y =
   let result =(advanceProgramCounter (processOpCodeInternal x y))
   in trace ("calling process op code with state:" ++ show x ++ " and:" ++ show y ++ " with result:" ++ show result) (result)
