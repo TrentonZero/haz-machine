@@ -20,6 +20,7 @@ data OpCode
   | INC Int
   | DEC Int
   | JUMP Int
+  | PRINT_ADDR Int
   deriving (Show, Eq)
 
 
@@ -68,6 +69,5 @@ processOpCodeInternal (DEC 0) state =
      in pushToStack newState val
 processOpCodeInternal (DEC var) state = setVar state (var-1) ((getVar state (var-1)) - 1)
 
-
-
+processOpCodeInternal (PRINT_ADDR addr) state = appendToStream1 state $ readASCIIString state addr
 

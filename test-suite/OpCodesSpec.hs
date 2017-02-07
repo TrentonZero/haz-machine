@@ -27,6 +27,7 @@ spec =
           test_JUMP
           test_JUMP_negative
           test_JUMP_zero
+          test_PRINT_ADDR_aaa
 
 test_nop =
   let memory = defaultMemoryMap
@@ -96,6 +97,13 @@ test_JUMP_zero =
       expected = memory
       result = processOpCode (JUMP 0) memory
   in assertWithMessage result expected "Should leave program counter unchanged."
+
+test_PRINT_ADDR_aaa =
+  let memory = defaultMemoryMap { memory = fromList [6342, 39110], shiftRegister = LOWER}
+      expected = memory { stream1 = "aaaaaa", programCounter = 1}
+      result = processOpCode (PRINT_ADDR 0) memory
+  in assertWithMessage result expected "should append 'aaaaaa' to stream1"
+
 
 --------- TEST CASES ----------
 assertWithMessage result expected message =
