@@ -23,6 +23,20 @@ data OpCode
   deriving (Show, Eq)
 
 
+-{-
+We can fold this with the either of the following:
+
+right to left:   foldr processOpCode defaultMemoryMap [NOP, NOP, NOP, NEW_LINE, INC 4, JUMP 4]
+left to right:
+
+ import Data.Foldable
+reorder a b = processOpCode b a
+ foldl' reorder defaultMemoryMap [NOP, NOP, NOP, JUMP 4]
+
+it must be foldl' to eliminate pointless traversals of the list
+
+-}
+
 processOpCode
   :: OpCode -> MemoryMap -> MemoryMap
 processOpCode x y =
