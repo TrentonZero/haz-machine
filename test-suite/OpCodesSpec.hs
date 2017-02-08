@@ -24,6 +24,7 @@ spec =
           test_INC_STACK
           test_DEC
           test_DEC_STACK
+          test_DEC_CHK
           test_JUMP
           test_JUMP_negative
           test_JUMP_zero
@@ -87,6 +88,11 @@ test_DEC =
       result = processOpCode (DEC 1) memory
   in assertWithMessage result expected "Should decrement variable."
 
+test_DEC_CHK =
+  let memory = defaultMemoryMap { memory = fromList [0,0,0,0,0,0], vars = [100] }
+      expected = memory { vars = [99], programCounter = 5 }
+      result = processOpCode (DEC_CHK 1 100 5) memory
+  in assertWithMessage result expected "Should decrement variable and jump."
 
 test_DEC_STACK =
   let memory = defaultMemoryMap { vars = [0], stack = [3,2,1] }

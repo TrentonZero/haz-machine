@@ -51,6 +51,7 @@ data OpCode
   | PIRACY Int
   | INC Int
   | DEC Int
+  | DEC_CHK Int Int Int
   | JUMP Int
   | JZ Int Int
   | JL Int Int Int
@@ -118,6 +119,12 @@ processOpCodeInternal (DEC 0) state =
          newState = snd pop
      in pushToStack newState val
 processOpCodeInternal (DEC var) state = setVar state (var-1) ((getVar state (var-1)) - 1)
+
+processOpCodeInternal (DEC_CHK var val label) state =
+  let stateAfterDec = processOpCodeInternal (DEC var) state
+      newVarVal     = getVar stateAfterDec (var - 1)
+      stateAfterJmp = processOpCodeInternal (JL newVarVal val label) stateAfterDec
+   in stateAfterJmp
 
 processOpCodeInternal (PRINT_ADDR addr) state = appendToStream1 state $ readASCIIString state addr
 
