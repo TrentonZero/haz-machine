@@ -27,6 +27,8 @@ spec =
           test_JUMP
           test_JUMP_negative
           test_JUMP_zero
+          test_JZ_zero
+          test_JZ_notzero
           test_PRINT_ADDR_aaa
           test_PRINT_ADDR_respect_term
           test_PRINT_aaa
@@ -99,6 +101,18 @@ test_JUMP_zero =
       expected = memory
       result = processOpCode (JUMP 0) memory
   in assertWithMessage result expected "Should leave program counter unchanged."
+
+test_JZ_zero =
+  let memory = defaultMemoryMap { programCounter = 132}
+      expected = memory { programCounter = 142 }
+      result = processOpCode (JZ 0 10) memory
+  in assertWithMessage result expected "should jump since passed zero"
+
+test_JZ_notzero =
+  let memory = defaultMemoryMap { programCounter = 132}
+      expected = memory { programCounter = 133 }
+      result = processOpCode (JZ 10 10) memory
+  in assertWithMessage result expected "should not jump since passed ten"
 
 test_PRINT_ADDR_aaa =
   let memory = defaultMemoryMap { memory = fromList [6342, 39110], shiftRegister = LOWER}

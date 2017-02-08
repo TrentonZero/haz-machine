@@ -12,6 +12,37 @@ import           MemoryMap
 import           System.Exit
 import           ZSCIIString
 
+
+{-|
+All Op Codes
+
+Zero Operand
+
+
+Zero-operand opcodes 0OP
+  rtrue
+  rfalse
+  print (literal-string)	print
+  print_ret
+  nop
+  save ?(label)
+  save -> (result)
+  restore ?(label)
+  restore -> (result)
+  restart
+  ret_popped
+  pop
+  catch
+  quit
+  new_line
+  show_status
+  verify
+  extended
+  piracy
+
+
+-}
+
 data OpCode
   = QUIT
   | NEW_LINE
@@ -20,6 +51,7 @@ data OpCode
   | INC Int
   | DEC Int
   | JUMP Int
+  | JZ Int Int
   | PRINT_ADDR Int
   | PRINT [ZChar]
   deriving (Show, Eq)
@@ -55,6 +87,12 @@ processOpCodeInternal (JUMP offset) state =
   -- minus 1 because we already advanced one for this operation
   let newPC = ((programCounter state) + offset - 1)
   in updateProgramCounter state newPC
+
+processOpCodeInternal (JZ 0 offset) state =
+  -- minus 1 because we already advanced one for this operation
+  let newPC = ((programCounter state) + offset - 1)
+  in updateProgramCounter state newPC
+processOpCodeInternal (JZ operand offset) state = state
 
 processOpCodeInternal (INC 0) state =
      let pop = popFromStack state
