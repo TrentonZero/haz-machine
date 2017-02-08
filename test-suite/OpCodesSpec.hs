@@ -27,6 +27,7 @@ spec =
           test_JUMP
           test_JUMP_negative
           test_JUMP_zero
+          test_PIRACY
           test_JZ_zero
           test_JZ_notzero
           test_JL_lessthan
