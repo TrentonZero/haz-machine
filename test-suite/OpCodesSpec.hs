@@ -35,6 +35,9 @@ spec =
           test_JG_lessthan
           test_JG_equal
           test_JG_greater
+          test_JE_lessthan
+          test_JE_equal
+          test_JE_greater
           test_PRINT_ADDR_aaa
           test_PRINT_ADDR_respect_term
           test_PRINT_aaa
@@ -155,6 +158,26 @@ test_JG_greater =
       expected = memory { programCounter = 142 }
       result = processOpCode (JG 20 15 10) memory
   in assertWithMessage result expected "should jump since a greater than b"
+
+
+test_JE_lessthan =
+  let memory = defaultMemoryMap { programCounter = 132}
+      expected = memory { programCounter = 133 }
+      result = processOpCode (JE 12 15 10) memory
+  in assertWithMessage result expected "should not jump since a less than b"
+
+test_JE_equal =
+  let memory = defaultMemoryMap { programCounter = 132}
+      expected = memory { programCounter = 142 }
+      result = processOpCode (JE 15 15 10) memory
+  in assertWithMessage result expected "should jump since a equals b"
+
+test_JE_greater =
+  let memory = defaultMemoryMap { programCounter = 132}
+      expected = memory { programCounter = 133 }
+      result = processOpCode (JE 20 15 10) memory
+  in assertWithMessage result expected "should not jump since a greater than b"
+
 
 
 test_PRINT_ADDR_aaa =

@@ -54,6 +54,7 @@ data OpCode
   | JZ Int Int
   | JL Int Int Int
   | JG Int Int Int
+  | JE Int Int Int
   | PRINT_ADDR Int
   | PRINT [ZChar]
   deriving (Show, Eq)
@@ -98,6 +99,10 @@ processOpCodeInternal (JL operand_a operand_b offset) state = performJump state 
 processOpCodeInternal (JG operand_a operand_b offset) state
   | operand_a <= operand_b = state
 processOpCodeInternal (JG operand_a operand_b offset) state = performJump state offset
+
+processOpCodeInternal (JE operand_a operand_b offset) state
+  | operand_a /= operand_b = state
+processOpCodeInternal (JE operand_a operand_b offset) state = performJump state offset
 
 processOpCodeInternal (INC 0) state =
      let pop = popFromStack state
