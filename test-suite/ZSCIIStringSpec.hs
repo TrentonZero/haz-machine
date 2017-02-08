@@ -55,7 +55,7 @@ test_readASCIIString_base =
                        "Read ZCSII string from memory and parse into ASCII"
 
 test_readASCIIString_hehe =
-  let memory = defaultMemoryMap { memory = (fromList [2474,33696]), shiftRegister = LOWER}
+  let memory = defaultMemoryMap { memory = (fromList [2474,35242]), shiftRegister = LOWER}
       location = 0
       expected = "HeHe"
   in assertWithMessage ((readASCIIString memory location) == expected)
