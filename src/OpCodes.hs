@@ -21,6 +21,7 @@ data OpCode
   | DEC Int
   | JUMP Int
   | PRINT_ADDR Int
+  | PRINT [ZChar]
   deriving (Show, Eq)
 
 
@@ -71,3 +72,5 @@ processOpCodeInternal (DEC var) state = setVar state (var-1) ((getVar state (var
 
 processOpCodeInternal (PRINT_ADDR addr) state = appendToStream1 state $ readASCIIString state addr
 
+
+processOpCodeInternal (PRINT zstring) state = appendToStream1 state $ catMaybes $ evaluateZString state zstring
