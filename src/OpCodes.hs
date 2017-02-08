@@ -52,6 +52,8 @@ data OpCode
   | DEC Int
   | JUMP Int
   | JZ Int Int
+  | JL Int Int Int
+  | JG Int Int Int
   | PRINT_ADDR Int
   | PRINT [ZChar]
   deriving (Show, Eq)
@@ -83,16 +85,19 @@ processOpCodeInternal QUIT state = updateShouldTerminate state True
 processOpCodeInternal NOP state = state
 processOpCodeInternal NEW_LINE state = appendToStream1 state "\n"
 processOpCodeInternal POP state = snd (popFromStack state)
-processOpCodeInternal (JUMP offset) state =
-  -- minus 1 because we already advanced one for this operation
-  let newPC = ((programCounter state) + offset - 1)
-  in updateProgramCounter state newPC
+processOpCodeInternal (JUMP offset) state = performJump state offset
 
-processOpCodeInternal (JZ 0 offset) state =
-  -- minus 1 because we already advanced one for this operation
-  let newPC = ((programCounter state) + offset - 1)
-  in updateProgramCounter state newPC
+processOpCodeInternal (JZ 0 offset) state = performJump state offset
 processOpCodeInternal (JZ operand offset) state = state
+
+
+processOpCodeInternal (JL operand_a operand_b offset) state
+  | operand_a >= operand_b = state
+processOpCodeInternal (JL operand_a operand_b offset) state = performJump state offset
+
+processOpCodeInternal (JG operand_a operand_b offset) state
+  | operand_a <= operand_b = state
+processOpCodeInternal (JG operand_a operand_b offset) state = performJump state offset
 
 processOpCodeInternal (INC 0) state =
      let pop = popFromStack state
@@ -112,3 +117,10 @@ processOpCodeInternal (PRINT_ADDR addr) state = appendToStream1 state $ readASCI
 
 
 processOpCodeInternal (PRINT zstring) state = appendToStream1 state $ catMaybes $ evaluateZString state zstring
+
+
+
+performJump state offset =
+    -- minus 1 because we already advanced one for this operation
+  let newPC = ((programCounter state) + offset - 1)
+  in updateProgramCounter state newPC

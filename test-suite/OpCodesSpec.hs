@@ -29,6 +29,12 @@ spec =
           test_JUMP_zero
           test_JZ_zero
           test_JZ_notzero
+          test_JL_lessthan
+          test_JL_equal
+          test_JL_greater
+          test_JG_lessthan
+          test_JG_equal
+          test_JG_greater
           test_PRINT_ADDR_aaa
           test_PRINT_ADDR_respect_term
           test_PRINT_aaa
@@ -113,6 +119,43 @@ test_JZ_notzero =
       expected = memory { programCounter = 133 }
       result = processOpCode (JZ 10 10) memory
   in assertWithMessage result expected "should not jump since passed ten"
+
+test_JL_lessthan =
+  let memory = defaultMemoryMap { programCounter = 132}
+      expected = memory { programCounter = 142 }
+      result = processOpCode (JL 12 15 10) memory
+  in assertWithMessage result expected "should jump since a less than b"
+
+test_JL_equal =
+  let memory = defaultMemoryMap { programCounter = 132}
+      expected = memory { programCounter = 133 }
+      result = processOpCode (JL 15 15 10) memory
+  in assertWithMessage result expected "should not jump since a equals b"
+
+test_JL_greater =
+  let memory = defaultMemoryMap { programCounter = 132}
+      expected = memory { programCounter = 133 }
+      result = processOpCode (JL 20 15 10) memory
+  in assertWithMessage result expected "should not jump since a greater than b"
+
+test_JG_lessthan =
+  let memory = defaultMemoryMap { programCounter = 132}
+      expected = memory { programCounter = 133 }
+      result = processOpCode (JG 12 15 10) memory
+  in assertWithMessage result expected "should not jump since a less than b"
+
+test_JG_equal =
+  let memory = defaultMemoryMap { programCounter = 132}
+      expected = memory { programCounter = 133 }
+      result = processOpCode (JG 15 15 10) memory
+  in assertWithMessage result expected "should not jump since a equals b"
+
+test_JG_greater =
+  let memory = defaultMemoryMap { programCounter = 132}
+      expected = memory { programCounter = 142 }
+      result = processOpCode (JG 20 15 10) memory
+  in assertWithMessage result expected "should jump since a greater than b"
+
 
 test_PRINT_ADDR_aaa =
   let memory = defaultMemoryMap { memory = fromList [6342, 39110], shiftRegister = LOWER}
