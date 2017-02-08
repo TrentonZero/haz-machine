@@ -111,6 +111,12 @@ test_JUMP_zero =
       result = processOpCode (JUMP 0) memory
   in assertWithMessage result expected "Should leave program counter unchanged."
 
+test_PIRACY =
+  let memory = defaultMemoryMap { programCounter = 132}
+      expected = memory { programCounter = 142 }
+      result = processOpCode (PIRACY 10) memory
+  in assertWithMessage result expected "Interpreter should not treat games as pirated"
+
 test_JZ_zero =
   let memory = defaultMemoryMap { programCounter = 132}
       expected = memory { programCounter = 142 }

@@ -48,6 +48,7 @@ data OpCode
   | NEW_LINE
   | NOP
   | POP
+  | PIRACY Int
   | INC Int
   | DEC Int
   | JUMP Int
@@ -124,6 +125,7 @@ processOpCodeInternal (PRINT_ADDR addr) state = appendToStream1 state $ readASCI
 processOpCodeInternal (PRINT zstring) state = appendToStream1 state $ catMaybes $ evaluateZString state zstring
 
 
+processOpCodeInternal (PIRACY loc) state = performJump state loc
 
 performJump state offset =
     -- minus 1 because we already advanced one for this operation
