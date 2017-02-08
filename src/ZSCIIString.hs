@@ -18,7 +18,7 @@ readASCIIString
 readASCIIString current loc =
   let zscii_mc = readZSCIIString current loc
       zscii = concat $ map splitMemoryCellToZChar zscii_mc
-      ascii = catMaybes $ evaluateZString' current zscii
+      ascii = catMaybes $ evaluateZString current zscii
   in ascii
 
 
@@ -40,14 +40,28 @@ readZSCIIString current loc =
 --
 splitMemoryCellToZChar :: MemoryCell -> [ZChar]
 splitMemoryCellToZChar cell =
-  let mod_cell = clearBit cell 15 -- need to clear the bit that serves as new-line indicator
-      zchar1 = fromIntegral (shiftR mod_cell 10) :: Word8
-      zchar2 = fromIntegral (shiftR (shiftL mod_cell 5) 10) :: Word8
-      zchar3 = fromIntegral (shiftR (shiftL mod_cell 10) 10) :: Word8
+  let mod_cell = (.&.) cell 0x7FFF -- need to clear the bit that serves as new-line indicator
+      zchar1 = fromIntegral ( shiftR ((.&.) mod_cell 0x7C00) 10) :: Word8
+      zchar2 = fromIntegral ( shiftR ((.&.) mod_cell 0x3E0 ) 5) :: Word8
+      zchar3 = fromIntegral (  (.&.) mod_cell 0x1F  ) :: Word8
   in [zchar1,zchar2,zchar3]
 
---convertZSCIIStringToZCharString :: ShiftRegister -> Memory -> [ZChar]
---
+appendF :: Word16 -> Word16 -> Word16
+appendF cur char =
+  let result =((.|.) (shiftL cur 5)  char)
+  in trace("calling appendF with cur:" Prelude.++ show cur Prelude.++ " char:" Prelude.++ show char Prelude.++ " and result:" Prelude.++ show result) result
+
+assembleMemoryCell :: [Word16] -> Word16
+assembleMemoryCell xs =
+  let myset = take 3 xs
+      cell = foldl appendF 0 myset
+  in trace("calling assembleMemoryCell with values: " Prelude.++ show xs Prelude.++ " and result: " Prelude.++ show cell) cell
+
+lineTermMemoryCell :: Word16 -> Word16
+lineTermMemoryCell cell = setBit cell 15
+
+
+-- convertZSCIIStringToZCharString :: ShiftRegister -> Memory -> [ZChar]
 convertZCharToASCIICharGivenState'
   :: (MemoryMap,Maybe Char) -> ZChar -> (MemoryMap,Maybe Char)
 convertZCharToASCIICharGivenState' (state, shift) zchar = trace ("calling convertZCharToASCIICharGivenState with state:" Prelude.++ show state Prelude.++ " shift: " Prelude.++ show shift Prelude.++ " zchar:" Prelude.++ show zchar Prelude.++ " result:" Prelude.++ show (convertZCharToASCIICharGivenState (state, shift) zchar)) (convertZCharToASCIICharGivenState (state, shift) zchar)

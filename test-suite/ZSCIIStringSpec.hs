@@ -19,6 +19,7 @@ spec =
           test_readASCIIString_base
           test_splitMemoryCellToZChar
           test_splitMemoryCellToZChar_with_term
+          test_splitMemoryCellToZChar_problem
           test_convertZCharToASCIIChar_lower
           test_convertZCharToASCIIChar_upper
           test_convertZCharToASCIIChar_symbol
@@ -28,7 +29,8 @@ spec =
           test_convertZCharToASCIIChar_upper_shiftLower
           test_convertZCharToASCIIChar_symbol_shiftLower
           test_convertZCharToASCIIChar_symbol_shiftUpper
-
+          test_assembleMemoryCell
+          test_assembleMemoryCellAndLineTerm
 
 test_readZSCIIString_base =
   let memory = defaultMemoryMap { memory = (fromList [1,2,3,4,5,6,7,0xFFFF,8,9,10]), shiftRegister = LOWER}
@@ -52,12 +54,24 @@ test_readASCIIString_base =
   in assertWithMessage ((readASCIIString memory location) == expected)
                        "Read ZCSII string from memory and parse into ASCII"
 
+test_readASCIIString_hehe =
+  let memory = defaultMemoryMap { memory = (fromList [2474,33696]), shiftRegister = LOWER}
+      location = 0
+      expected = "HeHe"
+  in assertWithMessage ((readASCIIString memory location) == expected)
+                       "Read ZCSII string from memory and parse into ASCII with shift reg"
 
 test_splitMemoryCellToZChar =
   let cell = 6342  -- 6342 = 00110-00110-00110, or 6 6 6
       expected = [6,6,6]
   in assertWithMessage (splitMemoryCellToZChar cell == expected)
                        "Split a single memory cell into 3 zchar"
+
+test_splitMemoryCellToZChar_problem =
+  let cell = 2474  -- 2474 = 00010-01101-01010, or 2 13 10
+      expected = [2,13,10]
+  in assertWithMessage (splitMemoryCellToZChar cell == expected)
+                       "Split a single memory cell into 3 zchar problem"
 
 test_splitMemoryCellToZChar_with_term =
   let cell = 39110  -- 39110 = 10110-00110-00110, or 6 6 6 with line terminator
@@ -149,6 +163,17 @@ test_convertZCharToASCIIChar_symbol_shiftUpper =
                        "Convert zchar to ascii with upper case shift"
 
 
+test_assembleMemoryCell =
+  let zchar =  [6,6,6]
+      expected = 6342
+  in assertWithMessage ( (assembleMemoryCell zchar) == expected)
+                       "test assembling memory cells"
+
+test_assembleMemoryCellAndLineTerm =
+  let zchar =  [6,6,6]
+      expected = 39110
+  in assertWithMessage ( lineTermMemoryCell (assembleMemoryCell zchar) == expected)
+                       "test assembling memory cells with line term"
 
 
 --------- TEST CASES ----------
