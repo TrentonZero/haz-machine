@@ -43,6 +43,8 @@ spec =
           test_PRINT_ADDR_aaa
           test_PRINT_ADDR_respect_term
           test_PRINT_aaa
+          test_ADD
+          test_ADD_2
 
 test_nop =
   let memory = defaultMemoryMap
@@ -210,6 +212,18 @@ test_PRINT_aaa =
       expected = memory { stream1 = "aaaaaa", programCounter = 1}
       result = processOpCode (PRINT [6,6,6,6,6,6]) memory
   in assertWithMessage result expected "should append 'aaaaaa' to stream1"
+
+test_ADD =
+  let memory = defaultMemoryMap { vars = [0] }
+      expected = memory { vars = [10], programCounter = 1}
+      result = processOpCode (ADD 5 5 1) memory
+  in assertWithMessage result expected "should add 5 and 5 and store result in var 1"
+
+test_ADD_2 =
+  let memory = defaultMemoryMap { vars = [0,0] }
+      expected = memory { vars = [0,100], programCounter = 1}
+      result = processOpCode (ADD 50 50 2) memory
+  in assertWithMessage result expected "should add 50 and 50 and store result in var 2"
 
 --------- TEST CASES ----------
 assertWithMessage result expected message =
