@@ -45,6 +45,8 @@ spec =
           test_PRINT_aaa
           test_ADD
           test_ADD_2
+          test_SUB
+          test_MUL
 
 test_nop =
   let memory = defaultMemoryMap
@@ -225,6 +227,20 @@ test_ADD_2 =
       result = processOpCode (ADD 50 50 2) memory
   in assertWithMessage result expected "should add 50 and 50 and store result in var 2"
 
+test_SUB =
+  let memory = defaultMemoryMap { vars = [0] }
+      expected = memory { vars = [10], programCounter = 1}
+      result = processOpCode (SUB 15 5 1) memory
+  in assertWithMessage result expected "should subtract 15 and 5 and store result in var 1"
+
+test_MUL =
+  let memory = defaultMemoryMap { vars = [0] }
+      expected = memory { vars = [50], programCounter = 1}
+      result = processOpCode (MUL 10 5 1) memory
+  in assertWithMessage result expected "should multiply 10 and 5 and store result in var 1"
+
+
+  
 --------- TEST CASES ----------
 assertWithMessage result expected message =
   let messageL = message Prelude.++ "\n\tresult: " Prelude.++ show result Prelude.++ "\n\texpected: " Prelude.++ show expected

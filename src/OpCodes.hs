@@ -60,6 +60,8 @@ data OpCode
   | PRINT_ADDR Int
   | PRINT [ZChar]
   | ADD Int Int Int
+  | SUB Int Int Int
+  | MUL Int Int Int
   deriving (Show, Eq)
 
 
@@ -90,9 +92,12 @@ processOpCodeInternal NOP state = state
 processOpCodeInternal NEW_LINE state = appendToStream1 state "\n"
 processOpCodeInternal POP state = snd (popFromStack state)
 
-processOpCodeInternal (ADD operand_a operand_b var) state = setVar state (var-1) (operand_a + operand_b)  
+processOpCodeInternal (ADD operand_a operand_b var) state = setVar state (var-1) (operand_a + operand_b)
 
-  
+processOpCodeInternal (SUB operand_a operand_b var) state = setVar state (var-1) (operand_a - operand_b)
+
+processOpCodeInternal (MUL operand_a operand_b var) state = setVar state (var-1) (operand_a * operand_b)
+
 processOpCodeInternal (JUMP offset) state = performJump state offset
 
 processOpCodeInternal (JZ 0 offset) state = performJump state offset
