@@ -47,6 +47,8 @@ spec =
           test_ADD_2
           test_SUB
           test_MUL
+          test_DIV
+          test_DIV_notwhole
 
 test_nop =
   let memory = defaultMemoryMap
@@ -240,7 +242,19 @@ test_MUL =
   in assertWithMessage result expected "should multiply 10 and 5 and store result in var 1"
 
 
-  
+test_DIV =
+  let memory = defaultMemoryMap { vars = [0] }
+      expected = memory { vars = [2], programCounter = 1}
+      result = processOpCode (DIV 10 5 1) memory
+  in assertWithMessage result expected "should divide 10 by 5 and store result in var 1"
+
+
+test_DIV_notwhole =
+  let memory = defaultMemoryMap { vars = [0] }
+      expected = memory { vars = [1], programCounter = 1}
+      result = processOpCode (DIV 10 7 1) memory
+  in assertWithMessage result expected "should divide 10 by 7 and get 1 and store result in var 1"
+
 --------- TEST CASES ----------
 assertWithMessage result expected message =
   let messageL = message Prelude.++ "\n\tresult: " Prelude.++ show result Prelude.++ "\n\texpected: " Prelude.++ show expected

@@ -62,6 +62,7 @@ data OpCode
   | ADD Int Int Int
   | SUB Int Int Int
   | MUL Int Int Int
+  | DIV Int Int Int
   deriving (Show, Eq)
 
 
@@ -97,6 +98,8 @@ processOpCodeInternal (ADD operand_a operand_b var) state = setVar state (var-1)
 processOpCodeInternal (SUB operand_a operand_b var) state = setVar state (var-1) (operand_a - operand_b)
 
 processOpCodeInternal (MUL operand_a operand_b var) state = setVar state (var-1) (operand_a * operand_b)
+
+processOpCodeInternal (DIV operand_a operand_b var) state = setVar state (var-1) (operand_a `div` operand_b)
 
 processOpCodeInternal (JUMP offset) state = performJump state offset
 
