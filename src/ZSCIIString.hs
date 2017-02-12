@@ -3,8 +3,7 @@ module ZSCIIString where
 import           Data.Bits
 import           Data.Char
 import           Data.Maybe
-import           Data.Word   (Word16)
-import           Data.Word   (Word8)
+import Data.Word (Word16, Word8)
 import           Debug.Trace
 import qualified MemoryMap   as MM
 
@@ -14,10 +13,10 @@ type ZChar = Word8
 
 -- return an ascii string
 readASCIIString
-   :: MM.MemoryMap -> MM.Location -> [Char]
+   :: MM.MemoryMap -> MM.Location -> String
 readASCIIString current loc =
   let zscii_mc = readZSCIIString current loc
-      zscii = concat $ map splitMemoryCellToZChar zscii_mc
+      zscii = concatMap splitMemoryCellToZChar zscii_mc
       ascii = catMaybes $ evaluateZString current zscii
   in ascii
 
@@ -27,15 +26,13 @@ readZSCIIString
   :: MM.MemoryMap -> MM.Location -> [MM.MemoryCell]
 readZSCIIString current loc =
   let cell = MM.readMemoryCell current loc
-  in case (cell) of
+  in case cell of
        Nothing -> []
        Just cell ->
-         case (testBit cell 15) of
-           True -> [cell]
-           False ->
-             cell :
-             readZSCIIString current
-                             (loc + 1)
+         if (testBit cell 15) then [cell] else
+           cell :
+           readZSCIIString current
+                           (loc + 1)
 
 --
 splitMemoryCellToZChar :: MM.MemoryCell -> [ZChar]
@@ -48,7 +45,7 @@ splitMemoryCellToZChar cell =
 
 appendF :: Word16 -> Word16 -> Word16
 appendF cur char =
-  let result =((.|.) (shiftL cur 5)  char)
+  let result =(.|.) (shiftL cur 5)  char
   in trace("calling appendF with cur:" ++ show cur ++ " char:" ++ show char ++ " and result:" ++ show result) result
 
 assembleMemoryCell :: [Word16] -> Word16
@@ -68,20 +65,20 @@ convertZCharToASCIICharGivenState' (state, shift) zchar = trace ("calling conver
 convertZCharToASCIICharGivenState
   :: (MM.MemoryMap,Maybe Char) -> ZChar -> (MM.MemoryMap,Maybe Char)
 convertZCharToASCIICharGivenState (state,_) zchar =
-  let shiftR = (MM.shiftRegister state)
+  let shiftR = MM.shiftRegister state
       newShiftAndChar = convertZCharToASCIIChar shiftR zchar
-  in ((MM.updateShiftRegister state $ fst newShiftAndChar), (snd newShiftAndChar))
+  in (MM.updateShiftRegister state $ fst newShiftAndChar, snd newShiftAndChar)
 
 convertZCharToASCIIChar
   :: MM.ShiftRegister -> ZChar -> (MM.ShiftRegister,Maybe Char)
 convertZCharToASCIIChar MM.LOWER zchar
-  | zchar >= 6 = (MM.LOWER,Just (chr ((fromIntegral zchar) + 91)))
+  | zchar >= 6 = (MM.LOWER,Just (chr (fromIntegral zchar + 91)))
 convertZCharToASCIIChar MM.LOWER 2 = (MM.UPPER_THEN_LOWER,Nothing)
 convertZCharToASCIIChar MM.LOWER 3 = (MM.SYMBOL_THEN_LOWER,Nothing)
 convertZCharToASCIIChar MM.LOWER 4 = (MM.UPPER,Nothing)
 convertZCharToASCIIChar MM.LOWER 5 = (MM.SYMBOL,Nothing)
 convertZCharToASCIIChar MM.UPPER zchar
-  | zchar >= 6 = (MM.UPPER,Just (chr ((fromIntegral zchar) + 59)))
+  | zchar >= 6 = (MM.UPPER,Just (chr (fromIntegral zchar + 59)))
 convertZCharToASCIIChar MM.UPPER 2 = (MM.SYMBOL_THEN_UPPER,Nothing)
 convertZCharToASCIIChar MM.UPPER 3 = (MM.LOWER_THEN_UPPER,Nothing)
 convertZCharToASCIIChar MM.UPPER 4 = (MM.SYMBOL,Nothing)

@@ -50,18 +50,18 @@ data MemoryMap = MemoryMap
     , shiftRegister   :: ShiftRegister
     , shouldTerminate :: Bool
     , vars            :: [Int]
-    , stream1         :: [Char]
+    , stream1         :: String
     } deriving (Show,Eq)
 
 defaultMemoryMap =
     MemoryMap
-    { memory = (V.fromList [])
+    { memory = V.fromList []
     , stack = []
     , programCounter = 0
     , stackFrames = []
     , shiftRegister = LOWER
     , shouldTerminate = False
-    , vars = take 16 (repeat 0)
+    , vars = replicate 16 0
     , stream1 = []
     }
 
@@ -77,7 +77,7 @@ updateShouldTerminate current flag =
         (vars current)
         (stream1 current)
 
-appendToStream1 :: MemoryMap -> [Char] -> MemoryMap
+appendToStream1 :: MemoryMap -> String -> MemoryMap
 appendToStream1 current string =
     MemoryMap
         (memory current)
@@ -87,11 +87,11 @@ appendToStream1 current string =
         (shiftRegister current)
         (shouldTerminate current)
         (vars current)
-        ((stream1 current) ++ string)
+        (stream1 current ++ string)
 
 advanceProgramCounter :: MemoryMap -> MemoryMap
 advanceProgramCounter current =
-    updateProgramCounter current ((programCounter current) + 1)
+    updateProgramCounter current (programCounter current + 1)
 
 updateStack :: MemoryMap -> [MemoryCell] -> MemoryMap
 updateStack current newStack =
@@ -142,7 +142,7 @@ updateShiftRegister current newShiftRegister =
         (stream1 current)
 
 getVar :: MemoryMap -> Int -> Int
-getVar current var = ((vars current) !! var)
+getVar current var = (vars current) !! var
 
 setVar :: MemoryMap -> Int -> Int -> MemoryMap
 setVar current location var =
@@ -154,20 +154,20 @@ setVar current location var =
            (stackFrames current)
            (shiftRegister current)
            (shouldTerminate current)
-           (((fst3 triple) ++ [var]) ++ (thrd3 triple))
+           ((fst3 triple ++ [var]) ++ thrd3 triple)
            (stream1 current)
 
 -- Write a single memory cell at a given location.
 writeMemoryCell
     :: MemoryMap -> Location -> MemoryCell -> MemoryMap
 writeMemoryCell current loc newCell =
-    let result = (memory current) V.// [(loc, newCell)]
+    let result = memory current V.// [(loc, newCell)]
     in updateMemoryMap current result
 
 -- Read a single memory cell from a given location.
 readMemoryCell
     :: MemoryMap -> Location -> Maybe MemoryCell
-readMemoryCell current loc = (memory current) V.!? loc
+readMemoryCell current loc = memory current V.!? loc
 
 -- This basically splits the memory into three, and replaces the middle with the memory we intend to
 -- write. Probably not the most efficient way to do it, especially given the cost of computing the
@@ -175,35 +175,35 @@ readMemoryCell current loc = (memory current) V.!? loc
 writeMemory
     :: MemoryMap -> Location -> [MemoryCell] -> MemoryMap
 writeMemory current loc cells =
-    let zipped = zip [loc .. (loc + (length cells))] cells
-        result = (memory current) V.// zipped
+    let zipped = zip [loc .. (loc + length cells)] cells
+        result = memory current V.// zipped
     in updateMemoryMap current result
 
 pushToStack :: MemoryMap -> MemoryCell -> MemoryMap
 pushToStack state cell =
-    let result = cell : (stack state)
+    let result = cell : stack state
     in updateStack state result
 
 updateStackHead :: MemoryMap -> (MemoryCell -> MemoryCell) -> MemoryMap
 updateStackHead state function =
     let tupleStack = popFromStack state
         firstTuple = fst tupleStack
-    in if firstTuple == Nothing
+    in if isNothing firstTuple
            then state
            else let result =
-                        (function (fromJust firstTuple)) :
-                        (stack (snd tupleStack))
+                        function (fromJust firstTuple) :
+                        stack (snd tupleStack)
                 in updateStack state result
 
 popFromStack :: MemoryMap -> (Maybe MemoryCell, MemoryMap)
 popFromStack state =
     let result = popFromStackInt (stack state)
-    in (fst result, (updateStack state (snd result)))
+    in (fst result, updateStack state (snd result))
 
 peekFromStack :: MemoryMap -> (Maybe MemoryCell, MemoryMap)
 peekFromStack state =
     let result = peekFromStackInt (stack state)
-    in (fst result, (updateStack state (snd result)))
+    in (fst result, updateStack state (snd result))
 
 popFromStackInt :: [MemoryCell] -> (Maybe MemoryCell, [MemoryCell])
 popFromStackInt (x:stack) = (Just x, stack)
@@ -231,6 +231,6 @@ splitAt3 loc1 loc2 cells =
     let mytail = snd fullTail
         middle = fst fullTail
         myhead = fst fullHead
-        fullHead = (splitAt loc1 cells)
-        fullTail = (splitAt (loc2 - loc1) (snd fullHead))
+        fullHead = splitAt loc1 cells
+        fullTail = splitAt (loc2 - loc1) (snd fullHead)
     in (myhead, middle, mytail)

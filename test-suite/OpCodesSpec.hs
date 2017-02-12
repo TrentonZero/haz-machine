@@ -15,40 +15,40 @@ import           ZSCIIString
 spec :: Spec
 spec =
   parallel $
-  do describe "OpCodes Tests" $
-       do test_QUIT
-          test_pop
-          test_nop
-          test_newLine
-          test_INC
-          test_INC_STACK
-          test_DEC
-          test_DEC_STACK
-          test_DEC_CHK
-          test_JUMP
-          test_JUMP_negative
-          test_JUMP_zero
-          test_PIRACY
-          test_JZ_zero
-          test_JZ_notzero
-          test_JL_lessthan
-          test_JL_equal
-          test_JL_greater
-          test_JG_lessthan
-          test_JG_equal
-          test_JG_greater
-          test_JE_lessthan
-          test_JE_equal
-          test_JE_greater
-          test_PRINT_ADDR_aaa
-          test_PRINT_ADDR_respect_term
-          test_PRINT_aaa
-          test_ADD
-          test_ADD_2
-          test_SUB
-          test_MUL
-          test_DIV
-          test_DIV_notwhole
+  describe "OpCodes Tests" $
+  do test_QUIT
+     test_pop
+     test_nop
+     test_newLine
+     test_INC
+     test_INC_STACK
+     test_DEC
+     test_DEC_STACK
+     test_DEC_CHK
+     test_JUMP
+     test_JUMP_negative
+     test_JUMP_zero
+     test_PIRACY
+     test_JZ_zero
+     test_JZ_notzero
+     test_JL_lessthan
+     test_JL_equal
+     test_JL_greater
+     test_JG_lessthan
+     test_JG_equal
+     test_JG_greater
+     test_JE_lessthan
+     test_JE_equal
+     test_JE_greater
+     test_PRINT_ADDR_aaa
+     test_PRINT_ADDR_respect_term
+     test_PRINT_aaa
+     test_ADD
+     test_ADD_2
+     test_SUB
+     test_MUL
+     test_DIV
+     test_DIV_notwhole
 
 test_nop =
   let memory = defaultMemoryMap
@@ -258,8 +258,8 @@ test_DIV_notwhole =
 --------- TEST CASES ----------
 assertWithMessage result expected message =
   let messageL = message ++ "\n\tresult: " ++ show result ++ "\n\texpected: " ++ show expected
-  in it messageL $ do (result == expected)
+  in it messageL $ (result == expected)
 
 assert :: Bool -> SpecWith ()
-assert condition = it "Get off your butt and write a message!" $ do condition
+assert condition = it "Get off your butt and write a message!" $ condition
 

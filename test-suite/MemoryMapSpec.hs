@@ -11,25 +11,25 @@ import           Test.Hspec.QuickCheck
 spec :: Spec
 spec =
   parallel $
-  do describe "MemoryMap Tests" $
-       do test_writeMemoryCell_base
-          test_readMemoryCell_base
-          test_readMemoryCell_oob
-          test_writeMemory_base
-          test_fst3_base
-          test_snd3_base
-          test_thrd3_base
-          test_splitAt3_base
-          test_popFromSmallStack
-          test_popFromPopulatedStack
-          test_pushToPopulatedStack
-          test_pushToStack
-          test_peekFromPopulatedStack
-          test_peekFromSmallStack
-          test_peekFromEmptyStack
-          test_updatePopulatedStack
-          test_updateSmallStack
-          test_updateEmptyStack
+  describe "MemoryMap Tests" $
+  do test_writeMemoryCell_base
+     test_readMemoryCell_base
+     test_readMemoryCell_oob
+     test_writeMemory_base
+     test_fst3_base
+     test_snd3_base
+     test_thrd3_base
+     test_splitAt3_base
+     test_popFromSmallStack
+     test_popFromPopulatedStack
+     test_pushToPopulatedStack
+     test_pushToStack
+     test_peekFromPopulatedStack
+     test_peekFromSmallStack
+     test_peekFromEmptyStack
+     test_updatePopulatedStack
+     test_updateSmallStack
+     test_updateEmptyStack
 
 --- old stuff
 test_writeMemoryCell_base :: SpecWith ()
@@ -37,7 +37,7 @@ test_writeMemoryCell_base =
   let memory = defaultMemoryMap {memory = V.fromList [1..10]}
       location = 2
       cell = 0
-      expected = defaultMemoryMap {memory = (V.fromList ([1,2,0] ++ [4..10]))}
+      expected = defaultMemoryMap {memory = V.fromList ([1,2,0] ++ [4..10])}
   in assertWithMessage (writeMemoryCell memory location cell == expected)
                        "Write one memorycell"
 
@@ -59,7 +59,7 @@ test_writeMemory_base =
   let memory = defaultMemoryMap {memory = V.fromList [1..10]}
       location = 2
       cells = [0..3]
-      expected = defaultMemoryMap { memory = (V.fromList ([1,2,0] ++ [1..3] ++ [7..10])) }
+      expected = defaultMemoryMap { memory = V.fromList ([1,2,0] ++ [1..3] ++ [7..10]) }
   in assertWithMessage (writeMemory memory location cells == expected)
                        "Write Memory range"
 
@@ -145,13 +145,13 @@ test_thrd3_base =
 
 test_splitAt3_base =
   assertWithMessage
-    ((splitAt3 1 3 [0..9]) == ([0],[1,2],[3,4,5,6,7,8,9]))
+    (splitAt3 1 3 [0..9] == ([0],[1,2],[3,4,5,6,7,8,9]))
     "Split into triplets"
 
 --------- TEST CASES ----------
 assertWithMessage
   :: Bool -> String -> SpecWith ()
-assertWithMessage condition message = it message $ do condition
+assertWithMessage condition message = it message $ condition
 
 assert :: Bool -> SpecWith ()
-assert condition = it "Get off your butt and write a message" $ do condition
+assert condition = it "Get off your butt and write a message" $ condition

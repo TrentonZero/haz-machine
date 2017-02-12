@@ -83,7 +83,7 @@ processOpCode
   :: OpCode -> MemoryMap -> MemoryMap
 processOpCode x y =
   let result = advanceProgramCounter $ processOpCodeInternal x y
-  in trace ("calling process op code with state:" ++ show x ++ " and:" ++ show y ++ " with result:" ++ show result) (result)
+  in trace ("calling process op code with state:" ++ show x ++ " and:" ++ show y ++ " with result:" ++ show result) result
 
 
 processOpCodeInternal
@@ -121,17 +121,17 @@ processOpCodeInternal (JE operand_a operand_b offset) state = performJump state 
 
 processOpCodeInternal (INC 0) state =
      let pop = popFromStack state
-         val = (fromJust (fst pop)) + 1
+         val = fromJust (fst pop) + 1
          newState = snd pop
      in pushToStack newState val
-processOpCodeInternal (INC var) state = setVar state (var-1) ((getVar state (var-1)) + 1)
+processOpCodeInternal (INC var) state = setVar state (var-1) (getVar state (var-1) + 1)
 
 processOpCodeInternal (DEC 0) state =
      let pop = popFromStack state
-         val = (fromJust (fst pop)) - 1
+         val = fromJust (fst pop) - 1
          newState = snd pop
      in pushToStack newState val
-processOpCodeInternal (DEC var) state = setVar state (var-1) ((getVar state (var-1)) - 1)
+processOpCodeInternal (DEC var) state = setVar state (var-1) (getVar state (var-1) - 1)
 
 processOpCodeInternal (DEC_CHK var val label) state =
   let stateAfterDec = processOpCodeInternal (DEC var) state
@@ -149,5 +149,5 @@ processOpCodeInternal (PIRACY loc) state = performJump state loc
 
 performJump state offset =
     -- minus 1 because we already advanced one for this operation
-  let newPC = ((programCounter state) + offset - 1)
+  let newPC = (programCounter state + offset - 1)
   in updateProgramCounter state newPC

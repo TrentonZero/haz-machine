@@ -13,34 +13,34 @@ import           ZSCIIString
 spec :: Spec
 spec =
   parallel $
-  do describe "ZSCIIString Tests" $
-       do test_readZSCIIString_base
-          test_readZSCIIString_noterm
-          test_readASCIIString_base
-          test_splitMemoryCellToZChar
-          test_splitMemoryCellToZChar_with_term
-          test_splitMemoryCellToZChar_problem
-          test_convertZCharToASCIIChar_lower
-          test_convertZCharToASCIIChar_upper
-          test_convertZCharToASCIIChar_symbol
-          test_convertZCharToASCIIChar_lower_shiftUpper
-          test_convertZCharToASCIIChar_lower_shiftSymbol
-          test_convertZCharToASCIIChar_upper_shiftSymbol
-          test_convertZCharToASCIIChar_upper_shiftLower
-          test_convertZCharToASCIIChar_symbol_shiftLower
-          test_convertZCharToASCIIChar_symbol_shiftUpper
-          test_assembleMemoryCell
-          test_assembleMemoryCellAndLineTerm
+  describe "ZSCIIString Tests" $
+  do test_readZSCIIString_base
+     test_readZSCIIString_noterm
+     test_readASCIIString_base
+     test_splitMemoryCellToZChar
+     test_splitMemoryCellToZChar_with_term
+     test_splitMemoryCellToZChar_problem
+     test_convertZCharToASCIIChar_lower
+     test_convertZCharToASCIIChar_upper
+     test_convertZCharToASCIIChar_symbol
+     test_convertZCharToASCIIChar_lower_shiftUpper
+     test_convertZCharToASCIIChar_lower_shiftSymbol
+     test_convertZCharToASCIIChar_upper_shiftSymbol
+     test_convertZCharToASCIIChar_upper_shiftLower
+     test_convertZCharToASCIIChar_symbol_shiftLower
+     test_convertZCharToASCIIChar_symbol_shiftUpper
+     test_assembleMemoryCell
+     test_assembleMemoryCellAndLineTerm
 
 test_readZSCIIString_base =
-  let memory = defaultMemoryMap { memory = (V.fromList [1,2,3,4,5,6,7,0xFFFF,8,9,10]), shiftRegister = LOWER}
+  let memory = defaultMemoryMap { memory = V.fromList [1,2,3,4,5,6,7,0xFFFF,8,9,10], shiftRegister = LOWER}
       location = 2
       expected_memory = [3,4,5,6,7,0xFFFF]
-  in assertWithMessage ((readZSCIIString memory location) == expected_memory)
+  in assertWithMessage (readZSCIIString memory location == expected_memory)
                        "Read ZCSII string from memory"
 
 test_readZSCIIString_noterm =
-  let memory = defaultMemoryMap { memory = (V.fromList [1..10]), shiftRegister= LOWER}
+  let memory = defaultMemoryMap { memory = V.fromList [1..10], shiftRegister= LOWER}
       location = 2
       expected_memory = [3..10]
   in assertWithMessage (readZSCIIString memory location == expected_memory)
@@ -48,17 +48,17 @@ test_readZSCIIString_noterm =
 
 
 test_readASCIIString_base =
-  let memory = defaultMemoryMap { memory = (V.fromList [6342,39110]), shiftRegister = LOWER}
+  let memory = defaultMemoryMap { memory = V.fromList [6342,39110], shiftRegister = LOWER}
       location = 0
       expected = "aaaaaa"  -- 6342 is "aaa" and 39110 is "aaa" with string term. need to compile a better sample
-  in assertWithMessage ((readASCIIString memory location) == expected)
+  in assertWithMessage (readASCIIString memory location == expected)
                        "Read ZCSII string from memory and parse into ASCII"
 
 test_readASCIIString_hehe =
-  let memory = defaultMemoryMap { memory = (V.fromList [2474,35242]), shiftRegister = LOWER}
+  let memory = defaultMemoryMap { memory = V.fromList [2474,35242], shiftRegister = LOWER}
       location = 0
       expected = "HeHe"
-  in assertWithMessage ((readASCIIString memory location) == expected)
+  in assertWithMessage (readASCIIString memory location == expected)
                        "Read ZCSII string from memory and parse into ASCII with shift reg"
 
 test_splitMemoryCellToZChar =
@@ -87,7 +87,7 @@ test_convertZCharToASCIIChar_lower =
         [6..31]
       state = (defaultMemoryMap { shiftRegister = LOWER}, Nothing)
       expected = "abcdefghijklmnopqrstuvwxyz"
-  in assertWithMessage (map fromJust (map snd (map (convertZCharToASCIICharGivenState state) zchar)) == expected) "Convert zchar to ascii in lower case"
+  in assertWithMessage (map (fromJust . snd) (map (convertZCharToASCIICharGivenState state) zchar) == expected) "Convert zchar to ascii in lower case"
 
 test_convertZCharToASCIIChar_upper =
   let zchar =
@@ -95,12 +95,11 @@ test_convertZCharToASCIIChar_upper =
       state = (defaultMemoryMap { shiftRegister = UPPER}, Nothing)
       expected = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
   in assertWithMessage
-       (map
-          fromJust
-          (map
-             snd
+       (map (
+          fromJust .
+             snd)
              (map (convertZCharToASCIICharGivenState state)
-                          zchar)) ==
+                          zchar) ==
         expected)
        "Convert zchar to ascii in upper case"
 
@@ -110,12 +109,11 @@ test_convertZCharToASCIIChar_symbol =
       state = (defaultMemoryMap { shiftRegister = SYMBOL}, Nothing)
       expected = " 0123456789.,!?_#'\"/\\<-:()"
   in assertWithMessage
-       (map
-          fromJust
-          (map
-             snd
+       (map (
+          fromJust .
+             snd)
              (map (convertZCharToASCIICharGivenState state)
-                          zchar)) ==
+                          zchar) ==
         expected)
        "Convert zchar to ascii in symbol case"
 
@@ -123,28 +121,28 @@ test_convertZCharToASCIIChar_lower_shiftUpper =
   let zchar =  [2,6,6]
       state = defaultMemoryMap {shiftRegister = LOWER}
       expected = [Nothing, Just 'A', Just 'a']
-  in assertWithMessage ((evaluateZString state zchar) == expected)
+  in assertWithMessage (evaluateZString state zchar == expected)
                        "Convert zchar to ascii with upper case shift"
 
 test_convertZCharToASCIIChar_lower_shiftSymbol =
   let zchar =  [3,6,6]
       state = defaultMemoryMap {shiftRegister = LOWER}
       expected = [Nothing, Just ' ', Just 'a']
-  in assertWithMessage ( (evaluateZString state zchar) == expected)
+  in assertWithMessage ( evaluateZString state zchar == expected)
                        "Convert zchar to ascii with symbol case shift"
 
 test_convertZCharToASCIIChar_upper_shiftSymbol =
   let zchar =  [2,6,6]
       state = defaultMemoryMap {shiftRegister = UPPER}
       expected = [Nothing, Just ' ', Just 'A']
-  in assertWithMessage ( (evaluateZString state zchar) == expected)
+  in assertWithMessage ( evaluateZString state zchar == expected)
                        "Convert zchar to ascii with symbol case shift"
 
 test_convertZCharToASCIIChar_upper_shiftLower =
   let zchar =  [3,6,6]
       state = defaultMemoryMap { shiftRegister = UPPER}
       expected = [Nothing, Just 'a', Just 'A']
-  in assertWithMessage ( (evaluateZString state zchar) == expected)
+  in assertWithMessage ( evaluateZString state zchar == expected)
                        "Convert zchar to ascii with lower case shift"
 
 
@@ -152,21 +150,21 @@ test_convertZCharToASCIIChar_symbol_shiftLower =
   let zchar =  [2,6,6]
       state = defaultMemoryMap { shiftRegister = SYMBOL}
       expected = [Nothing, Just 'a', Just ' ']
-  in assertWithMessage ( (evaluateZString' state zchar) == expected)
+  in assertWithMessage ( evaluateZString' state zchar == expected)
                        "Convert zchar to ascii with lower case shift"
 
 test_convertZCharToASCIIChar_symbol_shiftUpper =
   let zchar =  [3,6,6]
       state = defaultMemoryMap { shiftRegister = SYMBOL}
       expected = [Nothing, Just 'A', Just ' ']
-  in assertWithMessage ( (evaluateZString state zchar) == expected)
+  in assertWithMessage ( evaluateZString state zchar == expected)
                        "Convert zchar to ascii with upper case shift"
 
 
 test_assembleMemoryCell =
   let zchar =  [6,6,6]
       expected = 6342
-  in assertWithMessage ( (assembleMemoryCell zchar) == expected)
+  in assertWithMessage ( assembleMemoryCell zchar == expected)
                        "test assembling memory cells"
 
 test_assembleMemoryCellAndLineTerm =
