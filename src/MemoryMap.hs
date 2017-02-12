@@ -1,10 +1,7 @@
 module MemoryMap where
 
-import           Control.Monad
-import           Control.Monad.ST
 import           Data.Bits
 import           Data.Maybe
-import           Data.STRef
 import qualified Data.Vector.Unboxed as V
 import           Data.Word           (Word16)
 

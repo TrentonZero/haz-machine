@@ -6,7 +6,7 @@ import           Data.Maybe
 import           Data.Word   (Word16)
 import           Data.Word   (Word8)
 import           Debug.Trace
-import           MemoryMap
+import qualified MemoryMap   as MM
 
 
 -- ZChars are 5 bits, but will store in 8 bit words.
@@ -14,7 +14,7 @@ type ZChar = Word8
 
 -- return an ascii string
 readASCIIString
-   :: MemoryMap -> Location -> [Char]
+   :: MM.MemoryMap -> MM.Location -> [Char]
 readASCIIString current loc =
   let zscii_mc = readZSCIIString current loc
       zscii = concat $ map splitMemoryCellToZChar zscii_mc
@@ -24,9 +24,9 @@ readASCIIString current loc =
 
 -- ZSCII Strings pack three 5-bit characters into a 16-bit word. The string terminator is the first bit of the WORD16. If it is 1, the string is terminated. So to read a full ZSCII string, we have to read until we find a character with a most significant bit true.
 readZSCIIString
-  :: MemoryMap -> Location -> [MemoryCell]
+  :: MM.MemoryMap -> MM.Location -> [MM.MemoryCell]
 readZSCIIString current loc =
-  let cell = readMemoryCell current loc
+  let cell = MM.readMemoryCell current loc
   in case (cell) of
        Nothing -> []
        Just cell ->
@@ -38,7 +38,7 @@ readZSCIIString current loc =
                              (loc + 1)
 
 --
-splitMemoryCellToZChar :: MemoryCell -> [ZChar]
+splitMemoryCellToZChar :: MM.MemoryCell -> [ZChar]
 splitMemoryCellToZChar cell =
   let mod_cell = (.&.) cell 0x7FFF -- need to clear the bit that serves as new-line indicator
       zchar1 = fromIntegral ( shiftR ((.&.) mod_cell 0x7C00) 10) :: Word8
@@ -49,87 +49,87 @@ splitMemoryCellToZChar cell =
 appendF :: Word16 -> Word16 -> Word16
 appendF cur char =
   let result =((.|.) (shiftL cur 5)  char)
-  in trace("calling appendF with cur:" Prelude.++ show cur Prelude.++ " char:" Prelude.++ show char Prelude.++ " and result:" Prelude.++ show result) result
+  in trace("calling appendF with cur:" ++ show cur ++ " char:" ++ show char ++ " and result:" ++ show result) result
 
 assembleMemoryCell :: [Word16] -> Word16
 assembleMemoryCell xs =
   let myset = take 3 xs
       cell = foldl appendF 0 myset
-  in trace("calling assembleMemoryCell with values: " Prelude.++ show xs Prelude.++ " and result: " Prelude.++ show cell) cell
+  in trace("calling assembleMemoryCell with values: " ++ show xs ++ " and result: " ++ show cell) cell
 
 lineTermMemoryCell :: Word16 -> Word16
 lineTermMemoryCell cell = setBit cell 15
 
 
--- convertZSCIIStringToZCharString :: ShiftRegister -> Memory -> [ZChar]
+-- convertZSCIIStringToZCharString :: MM.ShiftRegister -> Memory -> [ZChar]
 convertZCharToASCIICharGivenState'
-  :: (MemoryMap,Maybe Char) -> ZChar -> (MemoryMap,Maybe Char)
-convertZCharToASCIICharGivenState' (state, shift) zchar = trace ("calling convertZCharToASCIICharGivenState with state:" Prelude.++ show state Prelude.++ " shift: " Prelude.++ show shift Prelude.++ " zchar:" Prelude.++ show zchar Prelude.++ " result:" Prelude.++ show (convertZCharToASCIICharGivenState (state, shift) zchar)) (convertZCharToASCIICharGivenState (state, shift) zchar)
+  :: (MM.MemoryMap,Maybe Char) -> ZChar -> (MM.MemoryMap,Maybe Char)
+convertZCharToASCIICharGivenState' (state, shift) zchar = trace ("calling convertZCharToASCIICharGivenState with state:" ++ show state ++ " shift: " ++ show shift ++ " zchar:" ++ show zchar ++ " result:" ++ show (convertZCharToASCIICharGivenState (state, shift) zchar)) (convertZCharToASCIICharGivenState (state, shift) zchar)
 convertZCharToASCIICharGivenState
-  :: (MemoryMap,Maybe Char) -> ZChar -> (MemoryMap,Maybe Char)
+  :: (MM.MemoryMap,Maybe Char) -> ZChar -> (MM.MemoryMap,Maybe Char)
 convertZCharToASCIICharGivenState (state,_) zchar =
-  let shiftR = (shiftRegister state)
+  let shiftR = (MM.shiftRegister state)
       newShiftAndChar = convertZCharToASCIIChar shiftR zchar
-  in ((updateShiftRegister state $ fst newShiftAndChar), (snd newShiftAndChar))
+  in ((MM.updateShiftRegister state $ fst newShiftAndChar), (snd newShiftAndChar))
 
 convertZCharToASCIIChar
-  :: ShiftRegister -> ZChar -> (ShiftRegister,Maybe Char)
-convertZCharToASCIIChar LOWER zchar
-  | zchar >= 6 = (LOWER,Just (chr ((fromIntegral zchar) + 91)))
-convertZCharToASCIIChar LOWER 2 = (UPPER_THEN_LOWER,Nothing)
-convertZCharToASCIIChar LOWER 3 = (SYMBOL_THEN_LOWER,Nothing)
-convertZCharToASCIIChar LOWER 4 = (UPPER,Nothing)
-convertZCharToASCIIChar LOWER 5 = (SYMBOL,Nothing)
-convertZCharToASCIIChar UPPER zchar
-  | zchar >= 6 = (UPPER,Just (chr ((fromIntegral zchar) + 59)))
-convertZCharToASCIIChar UPPER 2 = (SYMBOL_THEN_UPPER,Nothing)
-convertZCharToASCIIChar UPPER 3 = (LOWER_THEN_UPPER,Nothing)
-convertZCharToASCIIChar UPPER 4 = (SYMBOL,Nothing)
-convertZCharToASCIIChar UPPER 5 = (LOWER,Nothing)
-convertZCharToASCIIChar SYMBOL 2 = (LOWER_THEN_SYMBOL,Nothing)
-convertZCharToASCIIChar SYMBOL 3 = (UPPER_THEN_SYMBOL,Nothing)
-convertZCharToASCIIChar SYMBOL 4 = (SYMBOL,Nothing)
-convertZCharToASCIIChar SYMBOL 5 = (LOWER,Nothing)
-convertZCharToASCIIChar SYMBOL 6 = (SYMBOL,Just ' ')
-convertZCharToASCIIChar SYMBOL 7 = (SYMBOL,Just '0')
-convertZCharToASCIIChar SYMBOL 8 = (SYMBOL,Just '1')
-convertZCharToASCIIChar SYMBOL 9 = (SYMBOL,Just '2')
-convertZCharToASCIIChar SYMBOL 10 = (SYMBOL,Just '3')
-convertZCharToASCIIChar SYMBOL 11 = (SYMBOL,Just '4')
-convertZCharToASCIIChar SYMBOL 12 = (SYMBOL,Just '5')
-convertZCharToASCIIChar SYMBOL 13 = (SYMBOL,Just '6')
-convertZCharToASCIIChar SYMBOL 14 = (SYMBOL,Just '7')
-convertZCharToASCIIChar SYMBOL 15 = (SYMBOL,Just '8')
-convertZCharToASCIIChar SYMBOL 16 = (SYMBOL,Just '9')
-convertZCharToASCIIChar SYMBOL 17 = (SYMBOL,Just '.')
-convertZCharToASCIIChar SYMBOL 18 = (SYMBOL,Just ',')
-convertZCharToASCIIChar SYMBOL 19 = (SYMBOL,Just '!')
-convertZCharToASCIIChar SYMBOL 20 = (SYMBOL,Just '?')
-convertZCharToASCIIChar SYMBOL 21 = (SYMBOL,Just '_')
-convertZCharToASCIIChar SYMBOL 22 = (SYMBOL,Just '#')
-convertZCharToASCIIChar SYMBOL 23 = (SYMBOL,Just '\'')
-convertZCharToASCIIChar SYMBOL 24 = (SYMBOL,Just '"')
-convertZCharToASCIIChar SYMBOL 25 = (SYMBOL,Just '/')
-convertZCharToASCIIChar SYMBOL 26 = (SYMBOL,Just '\\')
-convertZCharToASCIIChar SYMBOL 27 = (SYMBOL,Just '<')
-convertZCharToASCIIChar SYMBOL 28 = (SYMBOL,Just '-')
-convertZCharToASCIIChar SYMBOL 29 = (SYMBOL,Just ':')
-convertZCharToASCIIChar SYMBOL 30 = (SYMBOL,Just '(')
-convertZCharToASCIIChar SYMBOL 31 = (SYMBOL,Just ')')
-convertZCharToASCIIChar UPPER_THEN_LOWER zchar = (LOWER,snd (convertZCharToASCIIChar UPPER zchar))
-convertZCharToASCIIChar LOWER_THEN_UPPER zchar = (UPPER,snd (convertZCharToASCIIChar LOWER zchar))
-convertZCharToASCIIChar LOWER_THEN_SYMBOL zchar = (SYMBOL,snd (convertZCharToASCIIChar LOWER zchar))
-convertZCharToASCIIChar UPPER_THEN_SYMBOL zchar = (SYMBOL,snd (convertZCharToASCIIChar UPPER zchar))
-convertZCharToASCIIChar SYMBOL_THEN_LOWER zchar = (LOWER,snd (convertZCharToASCIIChar SYMBOL zchar))
-convertZCharToASCIIChar SYMBOL_THEN_UPPER zchar = (UPPER,snd (convertZCharToASCIIChar SYMBOL zchar))
+  :: MM.ShiftRegister -> ZChar -> (MM.ShiftRegister,Maybe Char)
+convertZCharToASCIIChar MM.LOWER zchar
+  | zchar >= 6 = (MM.LOWER,Just (chr ((fromIntegral zchar) + 91)))
+convertZCharToASCIIChar MM.LOWER 2 = (MM.UPPER_THEN_LOWER,Nothing)
+convertZCharToASCIIChar MM.LOWER 3 = (MM.SYMBOL_THEN_LOWER,Nothing)
+convertZCharToASCIIChar MM.LOWER 4 = (MM.UPPER,Nothing)
+convertZCharToASCIIChar MM.LOWER 5 = (MM.SYMBOL,Nothing)
+convertZCharToASCIIChar MM.UPPER zchar
+  | zchar >= 6 = (MM.UPPER,Just (chr ((fromIntegral zchar) + 59)))
+convertZCharToASCIIChar MM.UPPER 2 = (MM.SYMBOL_THEN_UPPER,Nothing)
+convertZCharToASCIIChar MM.UPPER 3 = (MM.LOWER_THEN_UPPER,Nothing)
+convertZCharToASCIIChar MM.UPPER 4 = (MM.SYMBOL,Nothing)
+convertZCharToASCIIChar MM.UPPER 5 = (MM.LOWER,Nothing)
+convertZCharToASCIIChar MM.SYMBOL 2 = (MM.LOWER_THEN_SYMBOL,Nothing)
+convertZCharToASCIIChar MM.SYMBOL 3 = (MM.UPPER_THEN_SYMBOL,Nothing)
+convertZCharToASCIIChar MM.SYMBOL 4 = (MM.SYMBOL,Nothing)
+convertZCharToASCIIChar MM.SYMBOL 5 = (MM.LOWER,Nothing)
+convertZCharToASCIIChar MM.SYMBOL 6 = (MM.SYMBOL,Just ' ')
+convertZCharToASCIIChar MM.SYMBOL 7 = (MM.SYMBOL,Just '0')
+convertZCharToASCIIChar MM.SYMBOL 8 = (MM.SYMBOL,Just '1')
+convertZCharToASCIIChar MM.SYMBOL 9 = (MM.SYMBOL,Just '2')
+convertZCharToASCIIChar MM.SYMBOL 10 = (MM.SYMBOL,Just '3')
+convertZCharToASCIIChar MM.SYMBOL 11 = (MM.SYMBOL,Just '4')
+convertZCharToASCIIChar MM.SYMBOL 12 = (MM.SYMBOL,Just '5')
+convertZCharToASCIIChar MM.SYMBOL 13 = (MM.SYMBOL,Just '6')
+convertZCharToASCIIChar MM.SYMBOL 14 = (MM.SYMBOL,Just '7')
+convertZCharToASCIIChar MM.SYMBOL 15 = (MM.SYMBOL,Just '8')
+convertZCharToASCIIChar MM.SYMBOL 16 = (MM.SYMBOL,Just '9')
+convertZCharToASCIIChar MM.SYMBOL 17 = (MM.SYMBOL,Just '.')
+convertZCharToASCIIChar MM.SYMBOL 18 = (MM.SYMBOL,Just ',')
+convertZCharToASCIIChar MM.SYMBOL 19 = (MM.SYMBOL,Just '!')
+convertZCharToASCIIChar MM.SYMBOL 20 = (MM.SYMBOL,Just '?')
+convertZCharToASCIIChar MM.SYMBOL 21 = (MM.SYMBOL,Just '_')
+convertZCharToASCIIChar MM.SYMBOL 22 = (MM.SYMBOL,Just '#')
+convertZCharToASCIIChar MM.SYMBOL 23 = (MM.SYMBOL,Just '\'')
+convertZCharToASCIIChar MM.SYMBOL 24 = (MM.SYMBOL,Just '"')
+convertZCharToASCIIChar MM.SYMBOL 25 = (MM.SYMBOL,Just '/')
+convertZCharToASCIIChar MM.SYMBOL 26 = (MM.SYMBOL,Just '\\')
+convertZCharToASCIIChar MM.SYMBOL 27 = (MM.SYMBOL,Just '<')
+convertZCharToASCIIChar MM.SYMBOL 28 = (MM.SYMBOL,Just '-')
+convertZCharToASCIIChar MM.SYMBOL 29 = (MM.SYMBOL,Just ':')
+convertZCharToASCIIChar MM.SYMBOL 30 = (MM.SYMBOL,Just '(')
+convertZCharToASCIIChar MM.SYMBOL 31 = (MM.SYMBOL,Just ')')
+convertZCharToASCIIChar MM.UPPER_THEN_LOWER zchar = (MM.LOWER,snd (convertZCharToASCIIChar MM.UPPER zchar))
+convertZCharToASCIIChar MM.LOWER_THEN_UPPER zchar = (MM.UPPER,snd (convertZCharToASCIIChar MM.LOWER zchar))
+convertZCharToASCIIChar MM.LOWER_THEN_SYMBOL zchar = (MM.SYMBOL,snd (convertZCharToASCIIChar MM.LOWER zchar))
+convertZCharToASCIIChar MM.UPPER_THEN_SYMBOL zchar = (MM.SYMBOL,snd (convertZCharToASCIIChar MM.UPPER zchar))
+convertZCharToASCIIChar MM.SYMBOL_THEN_LOWER zchar = (MM.LOWER,snd (convertZCharToASCIIChar MM.SYMBOL zchar))
+convertZCharToASCIIChar MM.SYMBOL_THEN_UPPER zchar = (MM.UPPER,snd (convertZCharToASCIIChar MM.SYMBOL zchar))
 
 
---- evaluateZString state zchar = let x = (Prelude.map snd (Prelude.map (convertZCharToASCIICharGivenState state) zchar))
----				in if (x == Nothing) Prelude.map fromJust
-evaluateZString' state zchar = trace ("calling evaluateZString with state:" Prelude.++ show state Prelude.++ " zchar:" Prelude.++ show zchar Prelude.++ " result: "  Prelude.++ show (evaluateZString state zchar)) (evaluateZString state zchar)
-evaluateZString :: MemoryMap -> [ZChar] -> [Maybe Char]
+--- evaluateZString state zchar = let x = (map snd (map (convertZCharToASCIICharGivenState state) zchar))
+---				in if (x == Nothing) map fromJust
+evaluateZString' state zchar = trace ("calling evaluateZString with state:" ++ show state ++ " zchar:" ++ show zchar ++ " result: "  ++ show (evaluateZString state zchar)) (evaluateZString state zchar)
+evaluateZString :: MM.MemoryMap -> [ZChar] -> [Maybe Char]
 evaluateZString state [] = error "empty zstring"
 evaluateZString state [x] = [snd (convertZCharToASCIICharGivenState (state, Nothing) x)]
 evaluateZString state (x:xs) =
   let newstate = fst (convertZCharToASCIICharGivenState (state, Nothing) x)
-  in evaluateZString state [x] Prelude.++ evaluateZString newstate xs
+  in evaluateZString state [x] ++ evaluateZString newstate xs

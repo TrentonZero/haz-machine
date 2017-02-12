@@ -82,7 +82,7 @@ it must be foldl' to eliminate pointless traversals of the list
 processOpCode
   :: OpCode -> MemoryMap -> MemoryMap
 processOpCode x y =
-  let result =(advanceProgramCounter (processOpCodeInternal x y))
+  let result = advanceProgramCounter $ processOpCodeInternal x y
   in trace ("calling process op code with state:" ++ show x ++ " and:" ++ show y ++ " with result:" ++ show result) (result)
 
 

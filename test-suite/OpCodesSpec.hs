@@ -4,7 +4,7 @@ module OpCodesSpec
   where
 
 import           Data.Maybe
-import           Data.Vector.Unboxed
+import qualified Data.Vector.Unboxed   as V
 import           Debug.Trace
 import           MemoryMap
 import           OpCodes
@@ -71,7 +71,7 @@ test_newLine =
 
 
 test_QUIT =
-  let memory = defaultMemoryMap { memory = fromList [1,2,3,4,5,6,7,0xFFFF,8,9,10] }
+  let memory = defaultMemoryMap { memory = V.fromList [1,2,3,4,5,6,7,0xFFFF,8,9,10] }
       expected = memory { shouldTerminate = True, programCounter = 1 }
       result = processOpCode QUIT memory
   in assertWithMessage result expected "Should set the terminate flag so that MAIN IO Can kill it"
@@ -95,7 +95,7 @@ test_DEC =
   in assertWithMessage result expected "Should decrement variable."
 
 test_DEC_CHK =
-  let memory = defaultMemoryMap { memory = fromList [0,0,0,0,0,0], vars = [100] }
+  let memory = defaultMemoryMap { memory = V.fromList [0,0,0,0,0,0], vars = [100] }
       expected = memory { vars = [99], programCounter = 5 }
       result = processOpCode (DEC_CHK 1 100 5) memory
   in assertWithMessage result expected "Should decrement variable and jump."
@@ -200,19 +200,19 @@ test_JE_greater =
 
 
 test_PRINT_ADDR_aaa =
-  let memory = defaultMemoryMap { memory = fromList [6342, 39110], shiftRegister = LOWER}
+  let memory = defaultMemoryMap { memory = V.fromList [6342, 39110], shiftRegister = LOWER}
       expected = memory { stream1 = "aaaaaa", programCounter = 1}
       result = processOpCode (PRINT_ADDR 0) memory
   in assertWithMessage result expected "should append 'aaaaaa' to stream1"
 
 test_PRINT_ADDR_respect_term =
-  let memory = defaultMemoryMap { memory = fromList [6342, 39110, 6342], shiftRegister = LOWER}
+  let memory = defaultMemoryMap { memory = V.fromList [6342, 39110, 6342], shiftRegister = LOWER}
       expected = memory { stream1 = "aaaaaa", programCounter = 1}
       result = processOpCode (PRINT_ADDR 0) memory
   in assertWithMessage result expected "should append 'aaaaaa' to stream1, respecting the string terminator"
 
 test_PRINT_aaa =
-  let memory = defaultMemoryMap { memory = fromList [6342, 39110], shiftRegister = LOWER}
+  let memory = defaultMemoryMap { memory = V.fromList [6342, 39110], shiftRegister = LOWER}
       expected = memory { stream1 = "aaaaaa", programCounter = 1}
       result = processOpCode (PRINT [6,6,6,6,6,6]) memory
   in assertWithMessage result expected "should append 'aaaaaa' to stream1"
@@ -257,7 +257,7 @@ test_DIV_notwhole =
 
 --------- TEST CASES ----------
 assertWithMessage result expected message =
-  let messageL = message Prelude.++ "\n\tresult: " Prelude.++ show result Prelude.++ "\n\texpected: " Prelude.++ show expected
+  let messageL = message ++ "\n\tresult: " ++ show result ++ "\n\texpected: " ++ show expected
   in it messageL $ do (result == expected)
 
 assert :: Bool -> SpecWith ()

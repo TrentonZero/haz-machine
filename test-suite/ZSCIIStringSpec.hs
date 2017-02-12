@@ -3,7 +3,7 @@ module ZSCIIStringSpec
   (spec)
   where
 import           Data.Maybe
-import           Data.Vector.Unboxed
+import qualified Data.Vector.Unboxed   as V
 import           Debug.Trace
 import           MemoryMap
 import           Test.Hspec
@@ -33,14 +33,14 @@ spec =
           test_assembleMemoryCellAndLineTerm
 
 test_readZSCIIString_base =
-  let memory = defaultMemoryMap { memory = (fromList [1,2,3,4,5,6,7,0xFFFF,8,9,10]), shiftRegister = LOWER}
+  let memory = defaultMemoryMap { memory = (V.fromList [1,2,3,4,5,6,7,0xFFFF,8,9,10]), shiftRegister = LOWER}
       location = 2
       expected_memory = [3,4,5,6,7,0xFFFF]
   in assertWithMessage ((readZSCIIString memory location) == expected_memory)
                        "Read ZCSII string from memory"
 
 test_readZSCIIString_noterm =
-  let memory = defaultMemoryMap { memory = (fromList [1..10]), shiftRegister= LOWER}
+  let memory = defaultMemoryMap { memory = (V.fromList [1..10]), shiftRegister= LOWER}
       location = 2
       expected_memory = [3..10]
   in assertWithMessage (readZSCIIString memory location == expected_memory)
@@ -48,14 +48,14 @@ test_readZSCIIString_noterm =
 
 
 test_readASCIIString_base =
-  let memory = defaultMemoryMap { memory = (fromList [6342,39110]), shiftRegister = LOWER}
+  let memory = defaultMemoryMap { memory = (V.fromList [6342,39110]), shiftRegister = LOWER}
       location = 0
       expected = "aaaaaa"  -- 6342 is "aaa" and 39110 is "aaa" with string term. need to compile a better sample
   in assertWithMessage ((readASCIIString memory location) == expected)
                        "Read ZCSII string from memory and parse into ASCII"
 
 test_readASCIIString_hehe =
-  let memory = defaultMemoryMap { memory = (fromList [2474,35242]), shiftRegister = LOWER}
+  let memory = defaultMemoryMap { memory = (V.fromList [2474,35242]), shiftRegister = LOWER}
       location = 0
       expected = "HeHe"
   in assertWithMessage ((readASCIIString memory location) == expected)
@@ -87,7 +87,7 @@ test_convertZCharToASCIIChar_lower =
         [6..31]
       state = (defaultMemoryMap { shiftRegister = LOWER}, Nothing)
       expected = "abcdefghijklmnopqrstuvwxyz"
-  in assertWithMessage (Prelude.map fromJust (Prelude.map snd (Prelude.map (convertZCharToASCIICharGivenState state) zchar)) == expected) "Convert zchar to ascii in lower case"
+  in assertWithMessage (map fromJust (map snd (map (convertZCharToASCIICharGivenState state) zchar)) == expected) "Convert zchar to ascii in lower case"
 
 test_convertZCharToASCIIChar_upper =
   let zchar =
@@ -95,11 +95,11 @@ test_convertZCharToASCIIChar_upper =
       state = (defaultMemoryMap { shiftRegister = UPPER}, Nothing)
       expected = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
   in assertWithMessage
-       (Prelude.map
+       (map
           fromJust
-          (Prelude.map
+          (map
              snd
-             (Prelude.map (convertZCharToASCIICharGivenState state)
+             (map (convertZCharToASCIICharGivenState state)
                           zchar)) ==
         expected)
        "Convert zchar to ascii in upper case"
@@ -110,11 +110,11 @@ test_convertZCharToASCIIChar_symbol =
       state = (defaultMemoryMap { shiftRegister = SYMBOL}, Nothing)
       expected = " 0123456789.,!?_#'\"/\\<-:()"
   in assertWithMessage
-       (Prelude.map
+       (map
           fromJust
-          (Prelude.map
+          (map
              snd
-             (Prelude.map (convertZCharToASCIICharGivenState state)
+             (map (convertZCharToASCIICharGivenState state)
                           zchar)) ==
         expected)
        "Convert zchar to ascii in symbol case"

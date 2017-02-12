@@ -3,19 +3,19 @@ module MemoryMapBench
   (benchmarks)
   where
 
-import Criterion (Benchmark, bench, nf)
-import MemoryMap
-import Data.Vector.Unboxed
+import           Criterion           (Benchmark, bench, nf)
+import qualified Data.Vector.Unboxed as V
+import           MemoryMap
 
 maxMemorySize = 1024 * 1024 -- 1 MB
 
-smallVector = MemoryMap (fromList [1 .. 10]) [] 0 []
+smallVector = defaultMemoryMap { memory = (V.fromList [1 .. 10])}
 
-biggerVector = MemoryMap (fromList [0|a <- [1 .. 100]]) [] 0 []
+biggerVector = defaultMemoryMap { memory = (V.fromList [1 .. 100])}
 
-fatVector = MemoryMap (fromList [0|a <- [1 .. 100000]]) [] 0 []
+fatVector = defaultMemoryMap { memory = (V.fromList [1 .. 100000])}
 
-maxVector = MemoryMap (fromList [0|a <- [1 .. maxMemorySize]]) [] 0 []
+maxVector = defaultMemoryMap { memory = V.fromList [1 .. maxMemorySize]}
 
 trivialWriteMemoryCell = memory (writeMemoryCell smallVector 9 9)
 
@@ -23,53 +23,53 @@ biggerWriteMemoryCell = memory (writeMemoryCell biggerVector 9 9)
 
 fatWriteMemoryCell = memory (writeMemoryCell fatVector 99999 9)
 
-maxWriteMemoryCell = 
+maxWriteMemoryCell =
   memory (writeMemoryCell maxVector
                           (maxMemorySize - 1)
                           9)
 
-trivialMap1000WriteCell = 
-  Prelude.map 
+trivialMap1000WriteCell =
+  map
     memory
-    (Prelude.map (writeMemoryCell smallVector 9)
+    (map (writeMemoryCell smallVector 9)
                  [1 .. 1000])
 
-biggerMap1000WriteCell = 
-  Prelude.map 
+biggerMap1000WriteCell =
+  map
     memory
-    (Prelude.map (writeMemoryCell biggerVector 9)
+    (map (writeMemoryCell biggerVector 9)
                  [1 .. 1000])
 
-fatMap1000WriteCell = 
-  Prelude.map 
+fatMap1000WriteCell =
+  map
     memory
-    (Prelude.map (writeMemoryCell fatVector 9)
+    (map (writeMemoryCell fatVector 9)
                  [1 .. 1000])
 
-maxMap1000WriteCell = 
-  Prelude.map 
+maxMap1000WriteCell =
+  map
     memory
-    (Prelude.map 
+    (map
        (writeMemoryCell maxVector
                         (maxMemorySize - 1))
        [1 .. 1000])
 
-trivialWriteMemory = 
+trivialWriteMemory =
   memory (writeMemory smallVector
                       9
                       [9])
 
-biggerWriteMemory = 
+biggerWriteMemory =
   memory (writeMemory biggerVector
                       9
                       [9])
 
-fatWriteMemory = 
+fatWriteMemory =
   memory (writeMemory fatVector
                       99999
                       [9])
 
-maxWriteMemory = 
+maxWriteMemory =
   memory (writeMemory maxVector
                       (maxMemorySize - 1)
                       [9])
@@ -83,7 +83,7 @@ fatReadMemoryCell = readMemoryCell fatVector
 maxReadMemoryCell = readMemoryCell maxVector
 
 benchmarks :: [Benchmark]
-benchmarks = 
+benchmarks =
   [bench "trivial writeMemoryCell" (nf (const trivialWriteMemoryCell) ())
   ,bench "bigger writeMemoryCell" (nf (const biggerWriteMemoryCell) ())
   ,bench "fat writeMemoryCell" (nf (const fatWriteMemoryCell) ())
