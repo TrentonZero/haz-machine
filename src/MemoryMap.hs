@@ -142,7 +142,7 @@ updateShiftRegister current newShiftRegister =
         (stream1 current)
 
 getVar :: MemoryMap -> Int -> Int
-getVar current var = (vars current) !! var
+getVar current var = vars current !! var
 
 setVar :: MemoryMap -> Int -> Int -> MemoryMap
 setVar current location var =
