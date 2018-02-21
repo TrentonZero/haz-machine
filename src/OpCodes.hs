@@ -66,7 +66,82 @@ data OpCode
   deriving (Show, Eq)
 
 
+
+process
+  :: MemoryMap -> MemoryMap
+process memory =
+  processOpCode getOpCode(memory) memory
+
+
 {-|
+How the HELL do I get an opcode?
+
+Answer: It's complicated, and it is on page 26-31 of the Z Machine Standards document. Below is a summary:
+
+All instructions have a form: (long, short, extended, variable).
+Extended is V5+ only.
+
+PreV5:
+- First 1-2 Bytes: OpCode (2 byte optional)
+    - Bits 1-2 determine the form
+        - 11 : Variable form
+            - Bit 5 = 0 : 2 operand
+            - Bit 5 = 1 : variable operands
+            - Bottom 5 bits: op code number
+                - In V5+, if 190 (0xBE), always variable operands, and op code number is in byte 2.
+        - 10 : Short form
+            - Bits 4-5 describe operand count
+                - 11 : 0 OP
+                - else 1 OP
+                - short form is never 2 OP or  var OP
+            - Bottom 4 bits give the opcode number  (This is ambiguous and I think there is a typo in the doc)
+        - ELSE: Long form
+            - Always 2OP
+            - Bottom 5 bits are opcode number
+- Next byte (>v5): Opcode number for Extended form (V5+ only), otherwise...
+- Next 0-2 Bytes (<v5): (depending on form and number of operands)
+    - Short Form Opcode
+        - Bits 4-5 = Type
+    - Long form Opcode
+        - Bit 6 = Type of Operand 1
+            - 0 = small constant
+            - 1 = variable
+            - Large Constant impossible, requires variable form
+        - Bit 5 = Type of Operand 2
+            - same as above
+    - Variable form Opcode
+        - A single byte containing 4 2-bit operand types
+        - Bits 6-7: First operand type
+            - 00 = Large constant (2 bytes)
+            - 01 = Small constant (1 byte)
+            - 10 = Variable (1 byte)
+            - 11 = Omitted
+                - Once a type is omitted, no further operands should be read
+        - Bits 4-5: Second operand type
+        - Bits 2-3: Third operand type
+        - Bits 0-1: Fourth operand type
+- Up to 16 bites of operands, as determined by opcode form and type. There may be 0 of these.
+- Optional Store variable depending on op code (1 byte)
+- Optional Branch offset  depending on op code (1 or 2 bytes)
+- Optional Text to print depending on op code (unlimited length until string terminated)
+
+So... time to encode all that, but on the upside, it is finally really coming together how this could be just a foldl'
+on the memory map with process function to actually execute the VM.
+
+Also, even that summary leaves out a lot, go to section 4 of the Z Machine standard (pg26) when you actually work.
+
+
+-}
+getOpCode
+  :: MemoryMap -> OpCode
+getOpCode memory =
+  let op_code_cell = readMemoryCell (programCounter memory) memory
+
+
+
+{-|
+Note, this comment is out of date, but kept around because it's a useful idea.
+
 We can fold this with the either of the following:
 
 right to left:   foldr processOpCode defaultMemoryMap [NOP, NOP, NOP, NEW_LINE, INC 4, JUMP 4]
