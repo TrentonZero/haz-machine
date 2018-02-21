@@ -6,6 +6,7 @@ import           Data.Maybe
 import Data.Word (Word16, Word8)
 import           Debug.Trace
 import qualified MemoryMap   as MM
+{-# ANN module ("HLint: ignore Redundant bracket"::String) #-}
 
 
 -- ZChars are 5 bits, but will store in 8 bit words.
