@@ -132,10 +132,11 @@ Also, even that summary leaves out a lot, go to section 4 of the Z Machine stand
 
 
 -}
+
 getOpCode
   :: MemoryMap -> OpCode
-getOpCode memory =
-  let op_code_cell = readMemoryCell (programCounter memory) memory
+-- getOpCode memory =
+--   let op_code_cell = readMemoryCell (programCounter memory) memory
 
 
 
