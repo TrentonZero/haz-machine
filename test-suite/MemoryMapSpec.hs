@@ -148,10 +148,11 @@ test_splitAt3_base =
     (splitAt3 1 3 [0..9] == ([0],[1,2],[3,4,5,6,7,8,9]))
     "Split into triplets"
 
+
 --------- TEST CASES ----------
 assertWithMessage
   :: Bool -> String -> SpecWith ()
-assertWithMessage condition message = it message $ condition
+assertWithMessage = flip it
 
 assert :: Bool -> SpecWith ()
-assert condition = it "Get off your butt and write a message" $ condition
+assert = it "Get off your butt and write a message"

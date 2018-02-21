@@ -258,8 +258,8 @@ test_DIV_notwhole =
 --------- TEST CASES ----------
 assertWithMessage result expected message =
   let messageL = message ++ "\n\tresult: " ++ show result ++ "\n\texpected: " ++ show expected
-  in it messageL $ (result == expected)
+  in it messageL (result == expected)
 
 assert :: Bool -> SpecWith ()
-assert condition = it "Get off your butt and write a message!" $ condition
+assert condition = it "Get off your butt and write a message!" condition
 

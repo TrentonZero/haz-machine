@@ -87,7 +87,8 @@ test_convertZCharToASCIIChar_lower =
         [6..31]
       state = (defaultMemoryMap { shiftRegister = LOWER}, Nothing)
       expected = "abcdefghijklmnopqrstuvwxyz"
-  in assertWithMessage (map (fromJust . snd) (map (convertZCharToASCIICharGivenState state) zchar) == expected) "Convert zchar to ascii in lower case"
+  in assertWithMessage (map ((fromJust . snd) . convertZCharToASCIICharGivenState state) zchar  == expected)
+                       "Convert zchar to ascii in lower case"
 
 test_convertZCharToASCIIChar_upper =
   let zchar =
@@ -95,11 +96,11 @@ test_convertZCharToASCIIChar_upper =
       state = (defaultMemoryMap { shiftRegister = UPPER}, Nothing)
       expected = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
   in assertWithMessage
-       (map (
+       (map ((
           fromJust .
              snd)
-             (map (convertZCharToASCIICharGivenState state)
-                          zchar) ==
+             . convertZCharToASCIICharGivenState state)
+                          zchar ==
         expected)
        "Convert zchar to ascii in upper case"
 
@@ -109,11 +110,11 @@ test_convertZCharToASCIIChar_symbol =
       state = (defaultMemoryMap { shiftRegister = SYMBOL}, Nothing)
       expected = " 0123456789.,!?_#'\"/\\<-:()"
   in assertWithMessage
-       (map (
+       (map ((
           fromJust .
              snd)
-             (map (convertZCharToASCIICharGivenState state)
-                          zchar) ==
+             . convertZCharToASCIICharGivenState state)
+                          zchar ==
         expected)
        "Convert zchar to ascii in symbol case"
 
@@ -177,7 +178,7 @@ test_assembleMemoryCellAndLineTerm =
 --------- TEST CASES ----------
 assertWithMessage
   :: Bool -> String -> SpecWith ()
-assertWithMessage condition message = it message condition
+assertWithMessage = flip it
 
 assert :: Bool -> SpecWith ()
 assert = it "Get off your butt and write a message!"
