@@ -70,7 +70,7 @@ data OpCode
 process
   :: MemoryMap -> MemoryMap
 process memory =
-  processOpCode getOpCode(memory) memory
+  processOpCode (getOpCode memory) memory
 
 
 {-|
@@ -134,8 +134,8 @@ Also, even that summary leaves out a lot, go to section 4 of the Z Machine stand
 -}
 
 getOpCode
-  :: MemoryMap -> OpCode
--- getOpCode memory =
+   :: MemoryMap -> OpCode
+getOpCode _ = QUIT
 --   let op_code_cell = readMemoryCell (programCounter memory) memory
 
 
