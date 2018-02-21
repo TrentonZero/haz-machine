@@ -66,11 +66,19 @@ data OpCode
   deriving (Show, Eq)
 
 data OpCodeForm
-  = SHORT
-  | LONG
-  | EXTENDED
-  | VARIABLE
+  = SHORT_FORM
+  | LONG_FORM
+  | EXTENDED_FORM
+  | VARIABLE_FORM
   deriving (Show, Eq)
+
+data OperandType
+  = LARGE
+  | SMALL
+  | VARIABLE
+  | OMITTED
+  deriving (Show, Eq)
+
 
 process
   :: MemoryMap -> MemoryMap
@@ -107,6 +115,11 @@ PreV5:
 - Next 0-2 Bytes (<v5): (depending on form and number of operands)
     - Short Form Opcode
         - Bits 4-5 = Type
+                  - 00 = Large constant (2 bytes)
+                    - 01 = Small constant (1 byte)
+                    - 10 = Variable (1 byte)
+                    - 11 = Omitted
+
     - Long form Opcode
         - Bit 6 = Type of Operand 1
             - 0 = small constant
@@ -155,14 +168,64 @@ getOpCodeForm
 getOpCodeForm cell =
     let bit1 = testBit cell 0
         bit2 = testBit cell 1
-    in if bit1 && bit2 then VARIABLE
-       else if bit1 then SHORT
-       else LONG
+    in if bit1 && bit2 then VARIABLE_FORM
+       else if bit1 then SHORT_FORM
+       else LONG_FORM
 
 
--- getOperandTypes
---    :: OpCodeForm -> MemoryCell -> [OperandTypes]
--- getOperandTypes = [0]
+
+getOperandTypes
+    :: OpCodeForm -> MemoryCell -> [OperandType]
+
+-- Short form: in bits 4-5
+--          - 00 = Large constant (2 bytes)
+--            - 01 = Small constant (1 byte)
+--            - 10 = Variable (1 byte)
+--            - 11 = Omitted
+getOperandTypes SHORT_FORM cell =
+    let bit4 = testBit cell 4
+        bit5 = testBit cell 5
+    in  [getOperandType bit4 bit5]
+
+-- Long form
+getOperandTypes LONG_FORM cell =
+    let bit6 = testBit cell 6
+        bit5 = testBit cell 5
+    in [ getLongOperandType bit6, getLongOperandType bit5]
+
+-- Variable form
+-- TODO How do I refactor this to be a little less....dumb?
+-- TODO Something like:  map (uncurry getOperandType) $ zip oddBits evenBits
+-- TODO Even that is really unreadable. Come back to it.
+-- TODO Also, this is not quite right, the resulting function should drop everything after the first OMITTED
+getOperandTypes VARIABLE_FORM cell =
+    let bit1 = testBit cell 1
+        bit2 = testBit cell 2
+        bit3 = testBit cell 3
+        bit4 = testBit cell 4
+        bit5 = testBit cell 5
+        bit6 = testBit cell 6
+        bit7 = testBit cell 7
+        bit8 = testBit cell 8
+    in  [getOperandType bit1 bit2, getOperandType bit3 bit4, getOperandType bit5 bit6, getOperandType bit7 bit8]
+
+
+
+getOperandType
+    :: Bool -> Bool -> OperandType
+getOperandType bit1 bit2
+    | bit1 && bit2 = OMITTED
+    | bit1 && not bit2 = VARIABLE
+    | not bit1 && bit2 = SMALL
+    | otherwise = LARGE
+
+
+
+getLongOperandType
+    :: Bool -> OperandType
+getLongOperandType True = SMALL
+getLongOperandType False = VARIABLE
+
 
 
 
