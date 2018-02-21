@@ -16,3 +16,5 @@ I have some TDD scaffolding to give me some confidence as I move forward, and
 every method has at least one or two test cases around. Not perfect coverage by
 any means. 
 
+What is so frightening about the fact that, three years in a row, I have restarted interest in this
+project in February? 
