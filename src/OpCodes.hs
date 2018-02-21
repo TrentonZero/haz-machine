@@ -65,7 +65,12 @@ data OpCode
   | DIV Int Int Int
   deriving (Show, Eq)
 
-
+data OpCodeForm
+  = SHORT
+  | LONG
+  | EXTENDED
+  | VARIABLE
+  deriving (Show, Eq)
 
 process
   :: MemoryMap -> MemoryMap
@@ -120,7 +125,7 @@ PreV5:
         - Bits 4-5: Second operand type
         - Bits 2-3: Third operand type
         - Bits 0-1: Fourth operand type
-- Up to 16 bites of operands, as determined by opcode form and type. There may be 0 of these.
+- Up to 16 bytes of operands, as determined by opcode form and type. There may be 0 of these.
 - Optional Store variable depending on op code (1 byte)
 - Optional Branch offset  depending on op code (1 or 2 bytes)
 - Optional Text to print depending on op code (unlimited length until string terminated)
@@ -135,8 +140,29 @@ Also, even that summary leaves out a lot, go to section 4 of the Z Machine stand
 
 getOpCode
    :: MemoryMap -> OpCode
-getOpCode _ = QUIT
---   let op_code_cell = readMemoryCell (programCounter memory) memory
+getOpCode memory =
+   let (Just op_code_cell) = readMemoryCell memory (programCounter memory)
+   in let op_code_form = getOpCodeForm op_code_cell
+      in QUIT
+   -- the QUIT is temporary so i can still compile while i work
+
+-- Read the first two bits of the cell.
+-- 11: variable
+-- 10: short
+-- else: long (for now, v5 adds extended)
+getOpCodeForm
+    :: MemoryCell -> OpCodeForm
+getOpCodeForm cell =
+    let bit1 = testBit cell 0
+        bit2 = testBit cell 1
+    in if bit1 && bit2 then VARIABLE
+       else if bit1 then SHORT
+       else LONG
+
+
+-- getOperandTypes
+--    :: OpCodeForm -> MemoryCell -> [OperandTypes]
+-- getOperandTypes = [0]
 
 
 
