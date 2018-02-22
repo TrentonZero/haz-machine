@@ -15,6 +15,8 @@ spec =
   do test_writeMemoryCell_base
      test_readMemoryCell_base
      test_readMemoryCell_oob
+     test_readMemoryCells_base
+     test_readMemoryCells_oob
      test_writeMemory_base
      test_fst3_base
      test_snd3_base
@@ -48,12 +50,30 @@ test_readMemoryCell_base =
   in assertWithMessage (readMemoryCell memory location == expected)
                        "Read memory"
 
+
+
 test_readMemoryCell_oob =
   let memory = defaultMemoryMap {memory = V.fromList [1..10]}
       location = 11
       expected = Nothing
   in assertWithMessage (readMemoryCell memory location == expected)
                        "Read memory out of bounds."
+
+test_readMemoryCells_base =
+  let memory = defaultMemoryMap {memory = V.fromList [1..10]}
+      location = 2
+      count = 2
+      expected = [Just 3, Just 4]
+  in assertWithMessageLogging (readMemoryCells memory count location) expected
+                       "Read memory multiple"
+
+test_readMemoryCells_oob =
+  let memory = defaultMemoryMap {memory = V.fromList [1..10]}
+      location = 9
+      count = 3
+      expected = [Just 10, Nothing, Nothing]
+  in assertWithMessageLogging (readMemoryCells memory count location) expected
+                       "Read memory multiple out of bounds"
 
 test_writeMemory_base =
   let memory = defaultMemoryMap {memory = V.fromList [1..10]}
@@ -153,6 +173,10 @@ test_splitAt3_base =
 assertWithMessage
   :: Bool -> String -> SpecWith ()
 assertWithMessage = flip it
+
+assertWithMessageLogging result expected message =
+  let messageL = message ++ "\n\tresult: " ++ show result ++ "\n\texpected: " ++ show expected
+  in it messageL (result == expected)
 
 assert :: Bool -> SpecWith ()
 assert = it "Get off your butt and write a message"

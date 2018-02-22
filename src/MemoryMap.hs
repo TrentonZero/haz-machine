@@ -169,6 +169,11 @@ readMemoryCell
     :: MemoryMap -> Location -> Maybe MemoryCell
 readMemoryCell current loc = memory current V.!? loc
 
+-- Read the requested number of memory cells
+readMemoryCells
+    :: MemoryMap -> Int -> Location -> [Maybe MemoryCell]
+readMemoryCells current count loc = map (readMemoryCell current) [loc..loc+count-1]
+
 -- This basically splits the memory into three, and replaces the middle with the memory we intend to
 -- write. Probably not the most efficient way to do it, especially given the cost of computing the
 -- length of the inbound memory cell list.
