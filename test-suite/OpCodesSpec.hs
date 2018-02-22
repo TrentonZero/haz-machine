@@ -53,11 +53,8 @@ spec =
      test_DIV_notwhole
      test_getOperandTypes_VARIABLE_FORM
      test_getOperandTypes_VARIABLE_FORM_2
-     test_getOperandTypes_SHORT_FORM_1
-     test_getOperandTypes_SHORT_FORM_2
-     test_getOperandTypes_SHORT_FORM_3
-     test_getOperandTypes_SHORT_FORM_4
-     test_getOperandType_SHORT_FORM_1
+     test_getOperandTypes_SHORT_FORM
+     test_getOperandType_SHORT_FORM
 
 test_nop =
   let memory = defaultMemoryMap
@@ -283,38 +280,19 @@ test_getOperandTypes_VARIABLE_FORM_3 =
   in assertWithMessage result expected "Should show all larges"
 
 
-test_getOperandTypes_SHORT_FORM_1 =
-  let cell = setBit (setBit 0 4) 5 -- 00011000 00000000
-      expected = [OMITTED]
-      result = getOperandTypes SHORT_FORM cell
-  in assertWithMessage result expected "Should one omitted"
-
-test_getOperandTypes_SHORT_FORM_2 =
-  let cell = setBit 0 4 -- 00010000 00000000
-      expected = [VARIABLE]
-      result = getOperandTypes SHORT_FORM cell
-  in assertWithMessage result expected "Should one variable"
-
-test_getOperandTypes_SHORT_FORM_3 =
-  let cell = setBit 0 5   -- 00001000 00000000
-      expected = [SMALL]
-      result = getOperandTypes SHORT_FORM cell
-  in assertWithMessage result expected "Should one small"
-
-test_getOperandTypes_SHORT_FORM_4 =
-  let cell = 0 -- 00000000 00000000
-      expected = [LARGE]
-      result = getOperandTypes SHORT_FORM cell
-  in assertWithMessage result expected "Should one large"
+test_getOperandTypes_SHORT_FORM =
+  let cell = [0, setBit 0 5, setBit 0 4, setBit (setBit 0 4) 5] -- 00000000 00000000
+      expected = [[LARGE], [SMALL], [VARIABLE], [OMITTED]]
+      result = map (getOperandTypes SHORT_FORM) cell
+  in assertWithMessage result expected "Testing getOperandTypes"
 
 
-test_getOperandType_SHORT_FORM_1 =
-  let bit1 = True
-      bit2 = True
-      expected = OMITTED
-      result = getOperandType SHORT_FORM bit1 bit2
-  in assertWithMessage result expected "Should be omitted"
 
+test_getOperandType_SHORT_FORM =
+  let bits = [(True, True),(True, False), (False, True), (False,False)]
+      expected = [OMITTED, VARIABLE, SMALL, LARGE]
+      result = map (uncurry (getOperandType SHORT_FORM)) bits
+  in assertWithMessage result expected "Testing getOperandType"
 
 --------- TEST CASES ----------
 assertWithMessage result expected message =
