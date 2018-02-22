@@ -281,5 +281,5 @@ assertWithMessage result expected message =
   in it messageL (result == expected)
 
 assert :: Bool -> SpecWith ()
-assert condition = it "Get off your butt and write a message!" condition
+assert = it "Get off your butt and write a message!"
 
