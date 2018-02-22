@@ -173,7 +173,7 @@ getOpCodeForm cell =
        else LONG_FORM
 
 
-
+-- type signature of pattern matched function
 getOperandTypes
     :: OpCodeForm -> MemoryCell -> [OperandType]
 
@@ -185,46 +185,68 @@ getOperandTypes
 getOperandTypes SHORT_FORM cell =
     let bit4 = testBit cell 4
         bit5 = testBit cell 5
-    in  [getOperandType bit4 bit5]
+    in  [getOperandType SHORT_FORM bit4 bit5]
 
 -- Long form
 getOperandTypes LONG_FORM cell =
     let bit6 = testBit cell 6
         bit5 = testBit cell 5
-    in [ getLongOperandType bit6, getLongOperandType bit5]
+    in [ getOperandType LONG_FORM bit6 False, getOperandType LONG_FORM bit5 False]
 
--- Variable form
--- TODO How do I refactor this to be a little less....dumb?
--- TODO Something like:  map (uncurry getOperandType) $ zip oddBits evenBits
--- TODO Even that is really unreadable. Come back to it.
--- TODO Also, this is not quite right, the resulting function should drop everything after the first OMITTED
+{-
+* Variable form
+
+Split the first byte of the cell into pairs
+of bits, then pass all of those into getOperandType.
+We are using uncurry on the function so that we can
+pass the first two arguments in as a tuple.
+
+Also, per spec, since this is the variable form,
+we only care about about operand types up to the
+first OMITTED, but we need to return the first
+OMITTED, hence the bullshit with span.
+
+Alternatively...I could stray a bit from the spec and
+just always return an OMITTED at the end of the list, but
+why do that when it is working, and the short cut has the
+function lying to its caller.
+
+-}
 getOperandTypes VARIABLE_FORM cell =
-    let bit1 = testBit cell 1
-        bit2 = testBit cell 2
-        bit3 = testBit cell 3
-        bit4 = testBit cell 4
-        bit5 = testBit cell 5
-        bit6 = testBit cell 6
-        bit7 = testBit cell 7
-        bit8 = testBit cell 8
-    in  [getOperandType bit1 bit2, getOperandType bit3 bit4, getOperandType bit5 bit6, getOperandType bit7 bit8]
+    let bits = [(testBit cell 0, testBit cell 1),
+                (testBit cell 2, testBit cell 3),
+                (testBit cell 4, testBit cell 5),
+                (testBit cell 6, testBit cell 7)]
+        operandTypes = map (uncurry (getOperandType VARIABLE_FORM)) bits
+        spanned = span (/= OMITTED) operandTypes
+    in fst spanned ++ [head (snd spanned)]
 
 
+{-
+ The normal way to get an operand type.
+ 11 : OMITTED
+ 10 : VARIABLE
+ 01 : SMALL
+ 00 : LARGE
 
+Nothing can really be standard, so long
+form has it's own damn way to get an
+operand type.
+ 1 : SMALL
+ 0 : VARIABLE
+-}
 getOperandType
-    :: Bool -> Bool -> OperandType
-getOperandType bit1 bit2
+    :: OpCodeForm -> Bool -> Bool -> OperandType
+getOperandType LONG_FORM bit _
+    | bit       = SMALL
+    | otherwise = VARIABLE
+getOperandType _ bit1 bit2
     | bit1 && bit2 = OMITTED
-    | bit1 && not bit2 = VARIABLE
-    | not bit1 && bit2 = SMALL
-    | otherwise = LARGE
+    | bit1         = VARIABLE
+    | bit2         = SMALL
+    | otherwise    = LARGE
 
 
-
-getLongOperandType
-    :: Bool -> OperandType
-getLongOperandType True = SMALL
-getLongOperandType False = VARIABLE
 
 
 
@@ -250,7 +272,11 @@ processOpCode x y =
   let result = advanceProgramCounter $ processOpCodeInternal x y
   in trace ("calling process op code with state:" ++ show x ++ " and:" ++ show y ++ " with result:" ++ show result) result
 
-
+{-
+All the opcode implementations. A lot of pattern matching.
+Also, this has to be reworked some, because advanceProgramCounter
+is nowhere near as simple as we thought.
+-}
 processOpCodeInternal
   :: OpCode -> MemoryMap -> MemoryMap
 processOpCodeInternal QUIT state = updateShouldTerminate state True

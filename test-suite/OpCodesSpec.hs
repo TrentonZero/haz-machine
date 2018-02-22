@@ -49,6 +49,8 @@ spec =
      test_MUL
      test_DIV
      test_DIV_notwhole
+     test_getOperandTypes_VARIABLE_FORM
+     test_getOperandTypes_VARIABLE_FORM_2
 
 test_nop =
   let memory = defaultMemoryMap
@@ -254,6 +256,24 @@ test_DIV_notwhole =
       expected = memory { vars = [1], programCounter = 1}
       result = processOpCode (DIV 10 7 1) memory
   in assertWithMessage result expected "should divide 10 by 7 and get 1 and store result in var 1"
+
+test_getOperandTypes_VARIABLE_FORM =
+  let cell = 0xFF
+      expected = [OMITTED]
+      result = getOperandTypes VARIABLE_FORM cell
+  in assertWithMessage result expected "Should neglect everything after first omitted"
+
+test_getOperandTypes_VARIABLE_FORM_2 =
+  let cell = 0xF0
+      expected = [LARGE, LARGE, OMITTED]
+      result = getOperandTypes VARIABLE_FORM cell
+  in assertWithMessage result expected "Should neglect everything after LARGE,LARGE,OMIT"
+
+test_getOperandTypes_VARIABLE_FORM_3 =
+  let cell = 0x00
+      expected = [LARGE, LARGE, LARGE, LARGE]
+      result = getOperandTypes VARIABLE_FORM cell
+  in assertWithMessage result expected "Should show all larges"
 
 --------- TEST CASES ----------
 assertWithMessage result expected message =
