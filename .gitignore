@@ -2,3 +2,4 @@ build.log
 dist/
 report.html
 .stack-work/
+.idea
