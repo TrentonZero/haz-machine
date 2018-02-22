@@ -151,13 +151,26 @@ Also, even that summary leaves out a lot, go to section 4 of the Z Machine stand
 
 -}
 
+
+{-
+Need a better way to advance program counter as we read data.
+
+Also, operand lengths vary, and we need to remember that a memory cell is
+a Word16. So operand_count is much more complicated than just getting the
+number of operand types.
+-}
 getOpCode
    :: MemoryMap -> OpCode
 getOpCode memory =
-   let (Just op_code_cell) = readMemoryCell memory (programCounter memory)
-   in let op_code_form = getOpCodeForm op_code_cell
-      in QUIT
-   -- the QUIT is temporary so i can still compile while i work
+   let (Just op_code_cell)    = readMemoryCell memory (programCounter memory)
+       op_code_form           = getOpCodeForm op_code_cell
+       op_code_operands_types = getOperandTypes op_code_form op_code_cell
+       operand_count          = length op_code_operands_types
+       op_code_operands       = getOperands op_code_operands_types
+                                    (readMemoryCells memory
+                                        operand_count
+                                        (programCounter memory + 1))
+   in QUIT   -- the QUIT is temporary so i can still compile while i work
 
 -- Read the first two bits of the cell.
 -- 11: variable
@@ -250,7 +263,8 @@ getOperandType _ bit1 bit2
     | bit2         = SMALL
     | otherwise    = LARGE
 
-
+-- temporary just to compile
+getOperands _ _ = 0
 
 {-|
 Note, this comment is out of date, but kept around because it's a useful idea.
