@@ -211,6 +211,11 @@ just always return an OMITTED at the end of the list, but
 why do that when it is working, and the short cut has the
 function lying to its caller.
 
+Okay, fine, it wasn't working, I just forgot to add the test
+to the suite. But it works now, I just append OMITTED and
+take at most 4. And I think, due to laziness, the append
+might not even happen in the case where it is not needed.
+
 -}
 getOperandTypes VARIABLE_FORM cell =
     let bits = [(testBit cell 0, testBit cell 1),
@@ -218,8 +223,7 @@ getOperandTypes VARIABLE_FORM cell =
                 (testBit cell 4, testBit cell 5),
                 (testBit cell 6, testBit cell 7)]
         operandTypes = map (uncurry (getOperandType VARIABLE_FORM)) bits
-        spanned = span (/= OMITTED) operandTypes
-    in fst spanned ++ [head (snd spanned)]
+    in take 4 (takeWhile (/= OMITTED) operandTypes ++ [OMITTED])
 
 
 {-
@@ -245,9 +249,6 @@ getOperandType _ bit1 bit2
     | bit1         = VARIABLE
     | bit2         = SMALL
     | otherwise    = LARGE
-
-
-
 
 
 
