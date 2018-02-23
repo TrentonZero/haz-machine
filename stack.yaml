@@ -1,9 +1,7 @@
 flags: {}
 extra-package-dbs: []
 packages:
-- '.'
+- .
 extra-deps:
-- FPretty-1.1
 - hood-0.3
-- bytestring-0.10.6.0
-resolver: lts-6.9
+resolver: lts-10.6

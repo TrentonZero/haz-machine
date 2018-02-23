@@ -79,7 +79,7 @@ data OperandType
   | OMITTED
   deriving (Show, Eq)
 
-type Operand = (OperandType, [Int])
+type Operand = (OperandType, Int)
 
 process
   :: MemoryMap -> MemoryMap
@@ -266,8 +266,8 @@ getOperandType _ bit1 bit2
 
 -- temporary just to compile
 getOperands
-    :: [OperandTypes] -> [MemoryCells] -> [Operands]
-getOperands _ _ = 0
+    :: [OperandType] -> [Maybe MemoryCell] -> [Operand]
+getOperands _ _ = [(LARGE, 0)]
 
 
 {-
@@ -281,8 +281,8 @@ into their byte form so we can do things that make sense.
 -}
 getOperand
     :: OperandType -> [MemoryCellByte] -> Operand
-getOperand LARGE (x:xs) = 0
-getOperand _ cells      = head cells
+getOperand LARGE cells = (LARGE, fromIntegral (head (packWord16 (take 2 cells))))
+getOperand optype cells      = (optype, fromIntegral (head cells))
 
 
 

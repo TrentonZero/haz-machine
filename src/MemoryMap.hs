@@ -1,6 +1,7 @@
 module MemoryMap where
 
 import           Data.Bits
+import           Data.Binary
 import           Data.Maybe
 import qualified Data.Vector.Unboxed  as V
 import           Data.Word               (Word16)
@@ -223,11 +224,16 @@ peekFromStackInt _ = (Nothing, [])
 
 
 unpackMemoryCells :: [MemoryCell] -> [MemoryCellByte]
-unpackMemoryCells = flatten . map . unpackWord16
+unpackMemoryCells = concatMap unpackWord16
 
 
 unpackWord16 :: Word16 -> [Word8]
-unpackWord16 = unpack . toLazyByteString
+unpackWord16 = unpack . toLazyByteString . word16BE
+
+
+packWord16 :: [Word8] -> [Word16]
+--packWord16 =  word16BE  . pack
+packWord16 _ = [0]
 
 -------  LOCAL FUNCTIONS TO HELP OUT -----------
 fst3

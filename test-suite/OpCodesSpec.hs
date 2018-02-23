@@ -294,14 +294,18 @@ test_getOperandType_SHORT_FORM =
 
 
 test_unpackWord16 =
-  let expected = [[0xF, 0xF],
-                  [0x8, 0xA],
-                  [0xA, 0xB],
+  let expected = [[0xFF, 0xFF],
+                  [0x85, 0x1A],
+                  [0xBA, 0xAB],
+                  [0xCA, 0xFE],
+                  [0xBA, 0xBE],
                   [0x0, 0x0]]
       result = map unpackWord16
-                 [0xFF,
-                  0x8A,
-                  0xAB,
+                 [0xFFFF,
+                  0x851A,
+                  0xBAAB,
+                  0xCAFE,
+                  0xBABE,
                   0x00]
   in assertWithMessage result expected "Testing unpack16"
 
