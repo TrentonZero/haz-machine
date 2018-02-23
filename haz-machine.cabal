@@ -13,7 +13,7 @@ test-suite haz-machine-tests
     type:             exitcode-stdio-1.0
 
 benchmark criterion
-    build-depends:    base, haz-machine, criterion, vector
+    build-depends:    base, haz-machine, criterion, vector, bytestring-conversion == 0.2
     hs-source-dirs:   benchmark
     main-is:          Bench.hs
     type:             exitcode-stdio-1.0

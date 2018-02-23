@@ -231,9 +231,9 @@ unpackWord16 :: Word16 -> [Word8]
 unpackWord16 = unpack . toLazyByteString . word16BE
 
 
-packWord16 :: [Word8] -> [Word16]
+packWord16 :: Word8 -> Word8 -> Word16
 --packWord16 =  word16BE  . pack
-packWord16 _ = [0]
+packWord16  byte1 byte2 = fromByteString (foldr (append . toLazyByteString . word8) 0 [byte1,byte2])
 
 -------  LOCAL FUNCTIONS TO HELP OUT -----------
 fst3
