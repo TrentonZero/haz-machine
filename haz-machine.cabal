@@ -13,7 +13,7 @@ test-suite haz-machine-tests
     type:             exitcode-stdio-1.0
 
 benchmark criterion
-    build-depends:    base, haz-machine, criterion, vector, bytestring-conversion == 0.2
+    build-depends:    base, haz-machine, criterion
     hs-source-dirs:   benchmark
     main-is:          Bench.hs
     type:             exitcode-stdio-1.0
@@ -21,5 +21,5 @@ benchmark criterion
 library
     hs-source-dirs: src
     Exposed-Modules: MemoryMap, ZSCIIString, OpCodes
-    Build-Depends: base == 4.10.1.0, vector == 0.12.0.1, array, bytestring == 0.10.8.2, binary
+    Build-Depends: base == 4.10.1.0, vector == 0.12.0.1, array, bytestring == 0.10.8.2, binary, bytestring-conversion == 0.3.1
 

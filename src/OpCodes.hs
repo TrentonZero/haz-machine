@@ -281,7 +281,7 @@ into their byte form so we can do things that make sense.
 -}
 getOperand
     :: OperandType -> [MemoryCellByte] -> Operand
-getOperand LARGE cells  = (LARGE, fromIntegral (packWord16 (head cells), cells !! 1))
+getOperand LARGE cells  = (LARGE,  fromIntegral (packWord16 (head cells) (cells !! 1)))
 getOperand optype cells = (optype, fromIntegral (head cells))
 
 
