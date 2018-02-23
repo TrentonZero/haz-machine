@@ -54,6 +54,7 @@ spec =
      test_getOperandTypes_VARIABLE_FORM
      test_getOperandTypes_SHORT_FORM
      test_getOperandType_SHORT_FORM
+     test_unpackWord16
 
 test_nop =
   let memory = defaultMemoryMap
@@ -269,18 +270,42 @@ test_getOperandTypes_VARIABLE_FORM =
   in assertWithMessage result expected "Testing getOperandTypes in variable form"
 
 test_getOperandTypes_SHORT_FORM =
-  let cell = [0, setBit 0 5, setBit 0 4, setBit (setBit 0 4) 5] -- 00000000 00000000
-      expected = [[LARGE], [SMALL], [VARIABLE], [OMITTED]]
+  let cell = [0,
+              setBit 0 5,
+              setBit 0 4,
+              setBit (setBit 0 4) 5] -- 00000000 00000000
+      expected = [[LARGE],
+                  [SMALL],
+                  [VARIABLE],
+                  [OMITTED]]
       result = map (getOperandTypes SHORT_FORM) cell
   in assertWithMessage result expected "Testing getOperandTypes in short form"
 
 
 
 test_getOperandType_SHORT_FORM =
-  let bits = [(True, True),(True, False), (False, True), (False,False)]
+  let bits = [(True, True),
+              (True, False),
+              (False,True),
+              (False,False)]
       expected = [OMITTED, VARIABLE, SMALL, LARGE]
       result = map (uncurry (getOperandType SHORT_FORM)) bits
   in assertWithMessage result expected "Testing getOperandType"
+
+
+test_unpackWord16 =
+  let expected = [[0xF, 0xF],
+                  [0x8, 0xA],
+                  [0xA, 0xB],
+                  [0x0, 0x0]]
+      result = map unpackWord16
+                 [0xFF,
+                  0x8A,
+                  0xAB,
+                  0x00]
+  in assertWithMessage result expected "Testing unpack16"
+
+
 
 --------- TEST CASES ----------
 assertWithMessage result expected message =

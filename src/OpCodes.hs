@@ -79,6 +79,7 @@ data OperandType
   | OMITTED
   deriving (Show, Eq)
 
+type Operand = (OperandType, [Int])
 
 process
   :: MemoryMap -> MemoryMap
@@ -264,7 +265,26 @@ getOperandType _ bit1 bit2
     | otherwise    = LARGE
 
 -- temporary just to compile
+getOperands
+    :: [OperandTypes] -> [MemoryCells] -> [Operands]
 getOperands _ _ = 0
+
+
+{-
+Assumes that it is only passed memory cells that will contain
+the bytes needed. Need an elegant solution though for when
+two 1byte operands are in one 2byte memory cell, but...
+
+Let's solve the simple case, come back to the harder case
+Nevermind, lets just make memorymap convert memorycells
+into their byte form so we can do things that make sense.
+-}
+getOperand
+    :: OperandType -> [MemoryCellByte] -> Operand
+getOperand LARGE (x:xs) = 0
+getOperand _ cells      = head cells
+
+
 
 {-|
 Note, this comment is out of date, but kept around because it's a useful idea.

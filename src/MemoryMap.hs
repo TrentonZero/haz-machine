@@ -2,12 +2,15 @@ module MemoryMap where
 
 import           Data.Bits
 import           Data.Maybe
-import qualified Data.Vector.Unboxed as V
-import           Data.Word           (Word16)
+import qualified Data.Vector.Unboxed  as V
+import           Data.Word               (Word16)
+import           Data.ByteString.Lazy    (unpack)
+import           Data.ByteString.Builder
 
 -- Requirments 1.x and 2.x: The memory map consists of a list of 2-byte Words. The VM will decide
 -- how to interpret each word.
 type MemoryCell = Word16
+type MemoryCellByte = Word8
 
 type Memory = V.Vector MemoryCell
 
@@ -217,6 +220,14 @@ popFromStackInt _ = (Nothing, [])
 peekFromStackInt :: [MemoryCell] -> (Maybe MemoryCell, [MemoryCell])
 peekFromStackInt (x:stack) = (Just x, x : stack)
 peekFromStackInt _ = (Nothing, [])
+
+
+unpackMemoryCells :: [MemoryCell] -> [MemoryCellByte]
+unpackMemoryCells = flatten . map . unpackWord16
+
+
+unpackWord16 :: Word16 -> [Word8]
+unpackWord16 = unpack . toLazyByteString
 
 -------  LOCAL FUNCTIONS TO HELP OUT -----------
 fst3
