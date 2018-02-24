@@ -54,8 +54,6 @@ spec =
      test_getOperandTypes_VARIABLE_FORM
      test_getOperandTypes_SHORT_FORM
      test_getOperandType_SHORT_FORM
-     test_unpackWord16
-     test_packWord16
 
 test_nop =
   let memory = defaultMemoryMap
@@ -292,40 +290,6 @@ test_getOperandType_SHORT_FORM =
       expected = [OMITTED, VARIABLE, SMALL, LARGE]
       result = map (uncurry (getOperandType SHORT_FORM)) bits
   in assertWithMessage result expected "Testing getOperandType"
-
-
-test_unpackWord16 =
-  let expected = [[0xFF, 0xFF],
-                  [0x85, 0x1A],
-                  [0xBA, 0xAB],
-                  [0xCA, 0xFE],
-                  [0xBA, 0xBE],
-                  [0x0, 0x0]]
-      result = map unpackWord16
-                 [0xFFFF,
-                  0x851A,
-                  0xBAAB,
-                  0xCAFE,
-                  0xBABE,
-                  0x00]
-  in assertWithMessage result expected "Testing unpack16"
-
-test_packWord16 =
-   let expected = [0xFFFF,
-                  0x851A,
-                  0xBAAB,
-                  0xCAFE,
-                  0xBABE,
-                  0x00]
-       result  = map (uncurry packWord16)
-                  [(0xFF, 0xFF),
-                  (0x85, 0x1A),
-                  (0xBA, 0xAB),
-                  (0xCA, 0xFE),
-                  (0xBA, 0xBE),
-                  (0x0, 0x0)]
-  in assertWithMessage result expected "Testing pack16"
-
 
 --------- TEST CASES ----------
 assertWithMessage result expected message =

@@ -32,6 +32,8 @@ spec =
      test_updatePopulatedStack
      test_updateSmallStack
      test_updateEmptyStack
+     test_unpackWord16
+     test_packWord16
 
 --- old stuff
 test_writeMemoryCell_base :: SpecWith ()
@@ -167,6 +169,40 @@ test_splitAt3_base =
   assertWithMessage
     (splitAt3 1 3 [0..9] == ([0],[1,2],[3,4,5,6,7,8,9]))
     "Split into triplets"
+
+
+
+test_unpackWord16 =
+  let expected = [[0xFF, 0xFF],
+                  [0x85, 0x1A],
+                  [0xBA, 0xAB],
+                  [0xCA, 0xFE],
+                  [0xBA, 0xBE],
+                  [0x0, 0x0]]
+      result = map unpackWord16
+                 [0xFFFF,
+                  0x851A,
+                  0xBAAB,
+                  0xCAFE,
+                  0xBABE,
+                  0x00]
+  in assertWithMessageLogging result expected "Testing unpack16"
+
+test_packWord16 =
+   let expected = [0xFFFF,
+                  0x851A,
+                  0xBAAB,
+                  0xCAFE,
+                  0xBABE,
+                  0x00]
+       result  = map (uncurry packWord16)
+                  [(0xFF, 0xFF),
+                  (0x85, 0x1A),
+                  (0xBA, 0xAB),
+                  (0xCA, 0xFE),
+                  (0xBA, 0xBE),
+                  (0x0, 0x0)]
+  in assertWithMessageLogging result expected "Testing pack16"
 
 
 --------- TEST CASES ----------

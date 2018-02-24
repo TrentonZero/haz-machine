@@ -1,15 +1,15 @@
 module MemoryMap where
 
-import           Data.Bits
-import           Debug.Trace
 import           Data.Binary
-import           Data.Maybe
-import qualified Data.Vector.Unboxed  as V
-import           Data.Word               (Word16)
-import           Data.ByteString      as BS (empty, append,unpack)
-import           Data.ByteString.Lazy as LBS (toStrict)
+import           Data.Binary.Get            as DBG (getWord16be, runGet)
+import           Data.Bits
 import           Data.ByteString.Builder
-import           Data.ByteString.Conversion
+import           Data.ByteString.Lazy       as LBS (append, empty, snoc,
+                                                    toStrict, unpack)
+import           Data.Maybe
+import qualified Data.Vector.Unboxed        as V
+import           Data.Word                  (Word16)
+import           Debug.Trace
 
 -- Requirments 1.x and 2.x: The memory map consists of a list of 2-byte Words. The VM will decide
 -- how to interpret each word.
@@ -231,17 +231,14 @@ unpackMemoryCells = concatMap unpackWord16
 
 
 unpackWord16 :: Word16 -> [Word8]
-unpackWord16 = unpack . toStrict . toLazyByteString . word16BE
+unpackWord16 = LBS.unpack . toLazyByteString . word16BE
 
 
 packWord16 :: Word8 -> Word8 -> Word16
---packWord16 =  word16BE  . pack
-packWord16  byte1 byte2 =
-     let conversion = map (toStrict . toLazyByteString . word8) [byte1,byte2]
-         folded = foldr BS.append BS.empty conversion
-         result = fromByteString folded
-     in  trace ("conversion: " ++ show conversion ++ " folded: " ++ show folded ++ " result:" ++ show result)
-         fromMaybe 0 result
+packWord16  byte1 byte2 =  runGet DBG.getWord16be
+                           $ foldr
+                                 (LBS.append . toLazyByteString . word8)
+                                 LBS.empty [byte1,byte2]
 
 -------  LOCAL FUNCTIONS TO HELP OUT -----------
 fst3
