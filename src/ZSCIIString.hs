@@ -3,7 +3,7 @@ module ZSCIIString where
 import           Data.Bits
 import           Data.Char
 import           Data.Maybe
-import Data.Word (Word16, Word8)
+import           Data.Word   (Word16, Word8)
 import           Debug.Trace
 import qualified MemoryMap   as MM
 {-# ANN module ("HLint: ignore Redundant bracket"::String) #-}
