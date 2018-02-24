@@ -14,6 +14,7 @@ import           Debug.Trace
 -- Requirments 1.x and 2.x: The memory map consists of a list of 2-byte Words. The VM will decide
 -- how to interpret each word.
 type MemoryCell = Word16
+-- Sometimes the VM needs bytes
 type MemoryCellByte = Word8
 
 type Memory = V.Vector MemoryCell
