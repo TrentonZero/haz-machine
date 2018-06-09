@@ -182,6 +182,10 @@ readMemoryCells
     :: MemoryMap -> Int -> Location -> [Maybe MemoryCell]
 readMemoryCells current count loc = map (readMemoryCell current) [loc..loc+count-1]
 
+readMemoryCellBytes
+    :: MemoyMap -> Int -> Location -> [Maybe MemoryCellBytes]
+readMemoryCellBytes current count loc = fmap unpackMemoryCells (readMemoryCells current count loc)
+
 -- This basically splits the memory into three, and replaces the middle with the memory we intend to
 -- write. Probably not the most efficient way to do it, especially given the cost of computing the
 -- length of the inbound memory cell list.
