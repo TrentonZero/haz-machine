@@ -167,10 +167,10 @@ getOpCode memory =
        op_code_form           = getOpCodeForm op_code_cell
        op_code_operands_types = getOperandTypes op_code_form op_code_cell
        operand_count          = length op_code_operands_types
-       op_code_operands       = getOperands op_code_operands_types
-                                    (map fromJust (readMemoryCellBytes memory
-                                        operand_count
-                                        (programCounter memory + 1)))
+       --op_code_operands       = getOperands op_code_operands_types
+       --                            (map fromJust (readMemoryCellBytes memory
+       --                               operand_count
+       --                              (programCounter memory + 1)))
    in QUIT   -- the QUIT is temporary so i can still compile while i work
 
 -- Read the first two bits of the cell.
@@ -275,19 +275,15 @@ And it's the operand type that is the array that we are folding over.
 
 -}
 getOperands
-    :: [OperandType] -> [MemoryCellBytes] -> [Operand]
+    :: [OperandType] -> [MemoryCellByte] -> [Operand]
 -- temporary just to compile
 getOperands _ _ = [(LARGE, 0)]
 -- not resultl sure right now how to implement this.
 -- folder types cells = foldr ((flip getOperand)) ([],flatMap unpack cells) types
 getOperands (headType:types) (byte1:byte2:bytes) =
     if headType == LARGE
-        then getOperand headType [byte1:byte2] : getOperands types bytes
-        else getOperand headType [byte1] : getOperands types [byte2:bytes]
-getOperands (headType:types) (byte1:byte2:bytes) =
-    if headType == LARGE
-        then getOperand headType [byte1:byte2] : getOperands types bytes
-        else getOperand headType [byte1] : getOperands types [byte2:bytes]
+        then getOperand headType [byte1,byte2] : getOperands types bytes
+        else getOperand headType [byte1] : getOperands types (byte2:bytes)
 
 
 {-

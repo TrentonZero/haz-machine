@@ -183,7 +183,7 @@ readMemoryCells
 readMemoryCells current count loc = map (readMemoryCell current) [loc..loc+count-1]
 
 readMemoryCellBytes
-    :: MemoyMap -> Int -> Location -> [Maybe MemoryCellBytes]
+    :: MemoryMap -> Int -> Location -> [[MemoryCellByte]]
 readMemoryCellBytes current count loc = fmap unpackMemoryCells (readMemoryCells current count loc)
 
 -- This basically splits the memory into three, and replaces the middle with the memory we intend to
@@ -231,7 +231,7 @@ peekFromStackInt (x:stack) = (Just x, x : stack)
 peekFromStackInt _ = (Nothing, [])
 
 
-unpackMemoryCells :: [MemoryCell] -> [MemoryCellByte]
+unpackMemoryCells :: Maybe MemoryCell -> [MemoryCellByte]
 unpackMemoryCells = concatMap unpackWord16
 
 
