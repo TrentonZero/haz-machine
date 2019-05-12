@@ -3,7 +3,7 @@ module Main
   (main)
   where
 
-import Criterion.Main (bgroup, defaultMain)
+import           Criterion.Main (bgroup, defaultMain)
 import qualified MemoryMapBench
 
 main :: IO ()

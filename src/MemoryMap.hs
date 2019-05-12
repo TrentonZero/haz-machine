@@ -1,14 +1,14 @@
 module MemoryMap where
 
 import           Data.Binary
-import           Data.Binary.Get            as DBG (getWord16be, runGet)
+import           Data.Binary.Get         as DBG (getWord16be, runGet)
 import           Data.Bits
 import           Data.ByteString.Builder
-import           Data.ByteString.Lazy       as LBS (append, empty, snoc,
-                                                    toStrict, unpack)
+import           Data.ByteString.Lazy    as LBS (append, empty, snoc, toStrict,
+                                                 unpack)
 import           Data.Maybe
-import qualified Data.Vector.Unboxed        as V
-import           Data.Word                  (Word16)
+import qualified Data.Vector.Unboxed     as V
+import           Data.Word               (Word16)
 import           Debug.Trace
 
 -- Requirments 1.x and 2.x: The memory map consists of a list of 2-byte Words. The VM will decide
@@ -183,8 +183,8 @@ readMemoryCells
 readMemoryCells current count loc = map (readMemoryCell current) [loc..loc+count-1]
 
 readMemoryCellBytes
-    :: MemoryMap -> Int -> Location -> [[MemoryCellByte]]
-readMemoryCellBytes current count loc = fmap unpackMemoryCells (readMemoryCells current count loc)
+    :: MemoryMap -> Int -> Location -> [MemoryCellByte]
+readMemoryCellBytes current count loc = concatMap unpackMemoryCells (readMemoryCells current count loc)
 
 -- This basically splits the memory into three, and replaces the middle with the memory we intend to
 -- write. Probably not the most efficient way to do it, especially given the cost of computing the
@@ -224,11 +224,11 @@ peekFromStack state =
 
 popFromStackInt :: [MemoryCell] -> (Maybe MemoryCell, [MemoryCell])
 popFromStackInt (x:stack) = (Just x, stack)
-popFromStackInt _ = (Nothing, [])
+popFromStackInt _         = (Nothing, [])
 
 peekFromStackInt :: [MemoryCell] -> (Maybe MemoryCell, [MemoryCell])
 peekFromStackInt (x:stack) = (Just x, x : stack)
-peekFromStackInt _ = (Nothing, [])
+peekFromStackInt _         = (Nothing, [])
 
 
 unpackMemoryCells :: Maybe MemoryCell -> [MemoryCellByte]

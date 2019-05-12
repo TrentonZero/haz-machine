@@ -17,6 +17,8 @@ spec =
      test_readMemoryCell_oob
      test_readMemoryCells_base
      test_readMemoryCells_oob
+     test_readMemoryCellBytes_base
+     test_readMemoryCellBytes_oob
      test_writeMemory_base
      test_fst3_base
      test_snd3_base
@@ -75,6 +77,22 @@ test_readMemoryCells_oob =
       count = 3
       expected = [Just 10, Nothing, Nothing]
   in assertWithMessageLogging (readMemoryCells memory count location) expected
+                       "Read memory multiple out of bounds"
+
+test_readMemoryCellBytes_base =
+  let memory = defaultMemoryMap {memory = V.fromList [1..10]}
+      location = 2
+      count = 2
+      expected = [0, 3, 0, 4]
+  in assertWithMessageLogging (readMemoryCellBytes memory count location) expected
+                       "Read memory cell bytes multiple"
+
+test_readMemoryCellBytes_oob =
+  let memory = defaultMemoryMap {memory = V.fromList [1..10]}
+      location = 9
+      count = 3
+      expected = [0, 10]
+  in assertWithMessageLogging (readMemoryCellBytes memory count location) expected
                        "Read memory multiple out of bounds"
 
 test_writeMemory_base =

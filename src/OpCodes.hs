@@ -45,10 +45,20 @@ Zero-operand opcodes 0OP
 
 data OpCode
   = QUIT
+  | RTRUE
+  | RFALSE
+  | PRINT
+  | PRINT_RET
+  | SAVE
+  | RESTORE
+  | RESTART
+  | RET_POPPED
+  | SHOW_STATUS
+  | VERIFY
   | NEW_LINE
   | NOP
   | POP
-  | PIRACY Int
+  | PIRACY
   | INC Int
   | DEC Int
   | DEC_CHK Int Int Int
@@ -58,7 +68,6 @@ data OpCode
   | JG Int Int Int
   | JE Int Int Int
   | PRINT_ADDR Int
-  | PRINT [ZChar]
   | ADD Int Int Int
   | SUB Int Int Int
   | MUL Int Int Int
@@ -167,11 +176,34 @@ getOpCode memory =
        op_code_form           = getOpCodeForm op_code_cell
        op_code_operands_types = getOperandTypes op_code_form op_code_cell
        operand_count          = length op_code_operands_types
-       --op_code_operands       = getOperands op_code_operands_types
-       --                            (map fromJust (readMemoryCellBytes memory
-       --                               operand_count
-       --                              (programCounter memory + 1)))
-   in QUIT   -- the QUIT is temporary so i can still compile while i work
+       op_code_operands       = getOperands op_code_operands_types
+                                    (readMemoryCellBytes memory
+                                      operand_count
+                                     (programCounter memory + 1))
+   -- in NEW_LINE   -- the QUIT is temporary so i can still compile while i work
+   in getOpCodeFromCell op_code_cell
+
+getOpCodeFromCell
+    :: MemoryCell -> OpCode
+getOpCodeFromCell 0xB0 = RTRUE
+getOpCodeFromCell 0xB1 = RFALSE
+getOpCodeFromCell 0xB2 = PRINT
+getOpCodeFromCell 0xB3 = PRINT_RET
+getOpCodeFromCell 0xB4 = NOP
+getOpCodeFromCell 0xB5 = SAVE
+getOpCodeFromCell 0xB6 = RESTORE
+getOpCodeFromCell 0xB7 = RESTART
+getOpCodeFromCell 0xB8 = RET_POPPED
+getOpCodeFromCell 0xB9 = POP
+getOpCodeFromCell 0xBA = QUIT
+getOpCodeFromCell 0xBB = NEW_LINE
+getOpCodeFromCell 0xBC = SHOW_STATUS
+getOpCodeFromCell 0xBD = VERIFY
+getOpCodeFromCell 0xBE = NOP  -- first byte of extended opcode
+getOpCodeFromCell 0xBF = PIRACY
+getOpCodeFromCell _ = NOP
+
+
 
 -- Read the first two bits of the cell.
 -- 11: variable
@@ -384,10 +416,10 @@ processOpCodeInternal (DEC_CHK var val label) state =
 processOpCodeInternal (PRINT_ADDR addr) state = appendToStream1 state $ readASCIIString state addr
 
 
-processOpCodeInternal (PRINT zstring) state = appendToStream1 state $ catMaybes $ evaluateZString state zstring
+--processOpCodeInternal PRINT state = appendToStream1 state $ catMaybes $ evaluateZString state zstring
 
 
-processOpCodeInternal (PIRACY loc) state = performJump state loc
+--processOpCodeInternal PIRACY state = performJump state loc
 
 performJump state offset =
     -- minus 1 because we already advanced one for this operation
