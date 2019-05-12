@@ -1,0 +1,22 @@
+name: haz-machine
+version: 0.0.1
+
+dependencies:
+- base >= 4.7  && < 5
+- bytestring == 0.10.8.2
+- vector == 0.12.0.1
+- QuickCheck == 2.10.1
+- hspec == 2.4.4
+- binary
+
+library:
+  source-dirs: src/
+
+
+tests:
+  haz-machine-test:
+          main: Spec.hs
+          source-dirs: test-suite
+          dependencies:
+                  haz-machine
+
