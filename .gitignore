@@ -3,3 +3,4 @@ dist/
 report.html
 .stack-work/
 .idea
+haz-machine.cabal
