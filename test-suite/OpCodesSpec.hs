@@ -273,7 +273,7 @@ test_getOperandTypes_SHORT_FORM =
   let cell = [0,
               setBit 0 5,
               setBit 0 4,
-              setBit (setBit 0 4) 5] -- 00000000 00000000
+              setBit 0 5 .|. setBit 0 4]
       expected = [[LARGE],
                   [SMALL],
                   [VARIABLE],
