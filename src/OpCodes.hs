@@ -185,23 +185,25 @@ getOpCode memory =
 
 getOpCodeFromCell
     :: MemoryCell -> OpCode
-getOpCodeFromCell 0xB0 = RTRUE
-getOpCodeFromCell 0xB1 = RFALSE
-getOpCodeFromCell 0xB2 = PRINT
-getOpCodeFromCell 0xB3 = PRINT_RET
-getOpCodeFromCell 0xB4 = NOP
-getOpCodeFromCell 0xB5 = SAVE
-getOpCodeFromCell 0xB6 = RESTORE
-getOpCodeFromCell 0xB7 = RESTART
-getOpCodeFromCell 0xB8 = RET_POPPED
-getOpCodeFromCell 0xB9 = POP
-getOpCodeFromCell 0xBA = QUIT
-getOpCodeFromCell 0xBB = NEW_LINE
-getOpCodeFromCell 0xBC = SHOW_STATUS
-getOpCodeFromCell 0xBD = VERIFY
-getOpCodeFromCell 0xBE = NOP  -- first byte of extended opcode
-getOpCodeFromCell 0xBF = PIRACY
-getOpCodeFromCell _ = NOP
+getOpCodeFromCell byte
+ | byte == 0xB0 = RTRUE
+ | byte == 0xB0 = RTRUE
+ | byte == 0xB1 = RFALSE
+ | byte == 0xB2 = PRINT
+ | byte == 0xB3 = PRINT_RET
+ | byte == 0xB4 = NOP
+ | byte == 0xB5 = SAVE
+ | byte == 0xB6 = RESTORE
+ | byte == 0xB7 = RESTART
+ | byte == 0xB8 = RET_POPPED
+ | byte == 0xB9 = POP
+ | byte == 0xBA = QUIT
+ | byte == 0xBB = NEW_LINE
+ | byte == 0xBC = SHOW_STATUS
+ | byte == 0xBD = VERIFY
+ | byte == 0xBE = NOP  -- first byte of extended opcode
+ | byte == 0xBF = PIRACY
+ | otherwise = NOP
 
 
 
