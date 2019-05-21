@@ -55,6 +55,8 @@ spec =
      test_getOperandTypes_SHORT_FORM
      test_getOperandType_SHORT_FORM
      test_getOpCode_0OP
+     --test_getOperand
+     --test_getOperands
 
 test_nop =
   let memory = defaultMemoryMap
@@ -332,9 +334,21 @@ test_getOpCode_0OP =
       result = map getOpCode memory
   in assertWithMessage result expected "Testing getOpCode for 0OP "
 
+--test_getOperand =
+  --let cellBytes = [[0,0]]
+      --expected = [(LARGE, 0)]
+      --result   = map (uncurry (getOperand LARGE)) cellBytes
+  --in  assertWithMessage result expected "Testing getOperand"
+
+--test_getOperands =
+  --let cellBytes = [[0,0,0,0]]
+      --expected = [(LARGE, 0), (LARGE,0)]
+      --result = map ((getOperands LARGE) cellBytes)
+  --in assertWithMessage result expected "Testing getOperads"
+
 --------- TEST CASES ----------
 assertWithMessage result expected message =
-  let messageL = message ++ "\n\tresult: " ++ show result ++ "\n\texpected: " ++ show expected
+  let messageL = message ++ "\n\t\tresult: " ++ show result ++ "\n\t\texpected: " ++ show expected
   in it messageL (result == expected)
 
 assert :: Bool -> SpecWith ()
