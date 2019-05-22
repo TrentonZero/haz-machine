@@ -59,19 +59,19 @@ data OpCode
   | NOP
   | POP
   | PIRACY
-  | INC Int
-  | DEC Int
-  | DEC_CHK Int Int Int
-  | JUMP Int
-  | JZ Int Int
-  | JL Int Int Int
-  | JG Int Int Int
-  | JE Int Int Int
-  | PRINT_ADDR Int
-  | ADD Int Int Int
-  | SUB Int Int Int
-  | MUL Int Int Int
-  | DIV Int Int Int
+  | INC Operand
+  | DEC Operand
+  | DEC_CHK Operand Operand Operand
+  | JUMP Operand
+  | JZ Operand Operand
+  | JL Operand Operand Operand
+  | JG Operand Operand Operand
+  | JE Operand Operand Operand
+  | PRINT_ADDR Operand
+  | ADD Operand Operand Operand
+  | SUB Operand Operand Operand
+  | MUL Operand Operand Operand
+  | DIV Operand Operand Operand
   deriving (Show, Eq)
 
 data OpCodeForm
@@ -85,6 +85,9 @@ data OperandType
   = LARGE
   | SMALL
   | VARIABLE
+  | STORE_VARIABLE
+  | BRANCH_OFFSET
+  | TEXT
   | OMITTED
   deriving (Show, Eq)
 
@@ -181,11 +184,12 @@ getOpCode memory =
                                       operand_count
                                      (programCounter memory + 1))
    -- in NEW_LINE   -- the QUIT is temporary so i can still compile while i work
-   in getOpCodeFromCell op_code_cell
+   in getOpCodeFromCell op_code_cell op_code_operands
 
 getOpCodeFromCell
-    :: MemoryCell -> OpCode
-getOpCodeFromCell byte
+    :: MemoryCell -> [Operand] -> OpCode
+getOpCodeFromCell byte operands
+ | byte == 0x01 = JE (operands !! 0) (operands !! 1) (operands !! 2)
  | byte == 0xB0 = RTRUE
  | byte == 0xB0 = RTRUE
  | byte == 0xB1 = RFALSE
@@ -369,53 +373,53 @@ processOpCodeInternal NOP state = state
 processOpCodeInternal NEW_LINE state = appendToStream1 state "\n"
 processOpCodeInternal POP state = snd (popFromStack state)
 
-processOpCodeInternal (ADD operand_a operand_b var) state = setVar state (var-1) (operand_a + operand_b)
+processOpCodeInternal (ADD (_, operand_a) (_, operand_b) (STORE_VARIABLE, var)) state = setVar state (var-1) (operand_a + operand_b)
 
-processOpCodeInternal (SUB operand_a operand_b var) state = setVar state (var-1) (operand_a - operand_b)
+processOpCodeInternal (SUB (_, operand_a) (_,operand_b) (STORE_VARIABLE, var)) state = setVar state (var-1) (operand_a - operand_b)
 
-processOpCodeInternal (MUL operand_a operand_b var) state = setVar state (var-1) (operand_a * operand_b)
+processOpCodeInternal (MUL (_, operand_a) (_, operand_b) (STORE_VARIABLE, var)) state = setVar state (var-1) (operand_a * operand_b)
 
-processOpCodeInternal (DIV operand_a operand_b var) state = setVar state (var-1) (operand_a `div` operand_b)
+processOpCodeInternal (DIV (_, operand_a) (_, operand_b) (STORE_VARIABLE, var)) state = setVar state (var-1) (operand_a `div` operand_b)
 
-processOpCodeInternal (JUMP offset) state = performJump state offset
+processOpCodeInternal (JUMP (BRANCH_OFFSET, offset)) state = performJump state offset
 
-processOpCodeInternal (JZ 0 offset) state = performJump state offset
-processOpCodeInternal (JZ operand offset) state = state
+processOpCodeInternal (JZ (_, 0) (BRANCH_OFFSET, offset)) state = performJump state offset
+processOpCodeInternal (JZ _ _) state = state
 
 
-processOpCodeInternal (JL operand_a operand_b offset) state
+processOpCodeInternal (JL (_, operand_a) (_, operand_b) (BRANCH_OFFSET, offset)) state
   | operand_a >= operand_b = state
-processOpCodeInternal (JL operand_a operand_b offset) state = performJump state offset
+processOpCodeInternal (JL (_, operand_a) (_, operand_b) (BRANCH_OFFSET, offset)) state = performJump state offset
 
-processOpCodeInternal (JG operand_a operand_b offset) state
+processOpCodeInternal (JG (_, operand_a) (_, operand_b) (BRANCH_OFFSET, offset)) state
   | operand_a <= operand_b = state
-processOpCodeInternal (JG operand_a operand_b offset) state = performJump state offset
+processOpCodeInternal (JG (_, operand_a) (_, operand_b) (BRANCH_OFFSET, offset)) state = performJump state offset
 
-processOpCodeInternal (JE operand_a operand_b offset) state
+processOpCodeInternal (JE (type_a, operand_a) (type_b, operand_b) (BRANCH_OFFSET, offset)) state
   | operand_a /= operand_b = state
-processOpCodeInternal (JE operand_a operand_b offset) state = performJump state offset
+processOpCodeInternal (JE (type_a, operand_a) (type_b, operand_b) (BRANCH_OFFSET, offset)) state = performJump state offset
 
-processOpCodeInternal (INC 0) state =
+processOpCodeInternal (INC (STORE_VARIABLE, 0)) state =
      let pop = popFromStack state
          val = fromJust (fst pop) + 1
          newState = snd pop
      in pushToStack newState val
-processOpCodeInternal (INC var) state = setVar state (var-1) (getVar state (var-1) + 1)
+processOpCodeInternal (INC (STORE_VARIABLE, var)) state = setVar state (var-1) (getVar state (var-1) + 1)
 
-processOpCodeInternal (DEC 0) state =
+processOpCodeInternal (DEC (STORE_VARIABLE, 0)) state =
      let pop = popFromStack state
          val = fromJust (fst pop) - 1
          newState = snd pop
      in pushToStack newState val
-processOpCodeInternal (DEC var) state = setVar state (var-1) (getVar state (var-1) - 1)
+processOpCodeInternal (DEC (STORE_VARIABLE, var)) state = setVar state (var-1) (getVar state (var-1) - 1)
 
-processOpCodeInternal (DEC_CHK var val label) state =
-  let stateAfterDec = processOpCodeInternal (DEC var) state
+processOpCodeInternal (DEC_CHK (STORE_VARIABLE, var) (a, val) (BRANCH_OFFSET, offset)) state =
+  let stateAfterDec = processOpCodeInternal (DEC (STORE_VARIABLE, var)) state
       newVarVal     = getVar stateAfterDec (var - 1)
-      stateAfterJmp = processOpCodeInternal (JL newVarVal val label) stateAfterDec
+      stateAfterJmp = processOpCodeInternal (JL (STORE_VARIABLE, newVarVal) (a, val) (BRANCH_OFFSET, offset)) stateAfterDec
    in stateAfterJmp
 
-processOpCodeInternal (PRINT_ADDR addr) state = appendToStream1 state $ readASCIIString state addr
+processOpCodeInternal (PRINT_ADDR (BRANCH_OFFSET, addr)) state = appendToStream1 state $ readASCIIString state addr
 
 
 --processOpCodeInternal PRINT state = appendToStream1 state $ catMaybes $ evaluateZString state zstring
@@ -423,6 +427,8 @@ processOpCodeInternal (PRINT_ADDR addr) state = appendToStream1 state $ readASCI
 
 --processOpCodeInternal PIRACY state = performJump state loc
 
+performJump
+  :: MemoryMap -> Int -> MemoryMap
 performJump state offset =
     -- minus 1 because we already advanced one for this operation
   let newPC = (programCounter state + offset - 1)

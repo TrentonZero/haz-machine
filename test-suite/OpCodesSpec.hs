@@ -87,49 +87,49 @@ test_QUIT =
 test_INC =
   let memory = defaultMemoryMap { vars = [0] }
       expected = memory { vars = [1], programCounter = 1 }
-      result = processOpCode (INC 1) memory
+      result = processOpCode (INC (STORE_VARIABLE, 1)) memory
   in assertWithMessage result expected "Should increment variable. "
 
 test_INC_STACK =
   let memory = defaultMemoryMap { vars = [0], stack = [1,2,3] }
       expected = memory { vars = [0], stack = [2,2,3], programCounter = 1 }
-      result = processOpCode (INC 0) memory
+      result = processOpCode (INC (STORE_VARIABLE, 0)) memory
   in assertWithMessage result expected "Should increment head of stack. "
 
 test_DEC =
   let memory = defaultMemoryMap { vars = [100] }
       expected = memory { vars = [99], programCounter = 1 }
-      result = processOpCode (DEC 1) memory
+      result = processOpCode (DEC (STORE_VARIABLE, 1)) memory
   in assertWithMessage result expected "Should decrement variable."
 
 test_DEC_CHK =
   let memory = defaultMemoryMap { memory = V.fromList [0,0,0,0,0,0], vars = [100] }
       expected = memory { vars = [99], programCounter = 5 }
-      result = processOpCode (DEC_CHK 1 100 5) memory
+      result = processOpCode (DEC_CHK (STORE_VARIABLE, 1) (SMALL, 100) (BRANCH_OFFSET, 5)) memory
   in assertWithMessage result expected "Should decrement variable and jump."
 
 test_DEC_STACK =
   let memory = defaultMemoryMap { vars = [0], stack = [3,2,1] }
       expected = memory { vars = [0], stack = [2,2,1], programCounter = 1 }
-      result = processOpCode (DEC 0) memory
+      result = processOpCode (DEC (STORE_VARIABLE, 0)) memory
   in assertWithMessage result expected "Should decrement head of stack."
 
 test_JUMP =
   let memory = defaultMemoryMap { programCounter = 132}
       expected = memory { programCounter = 232 }
-      result = processOpCode (JUMP 100) memory
+      result = processOpCode (JUMP (BRANCH_OFFSET, 100)) memory
   in assertWithMessage result expected "Should jump program counter by 100."
 
 test_JUMP_negative =
   let memory = defaultMemoryMap { programCounter = 132}
       expected = memory { programCounter = 32 }
-      result = processOpCode (JUMP (-100)) memory
+      result = processOpCode (JUMP (BRANCH_OFFSET, -100)) memory
   in assertWithMessage result expected "Should jump program counter by -100."
 
 test_JUMP_zero =
   let memory = defaultMemoryMap { programCounter = 132}
       expected = memory
-      result = processOpCode (JUMP 0) memory
+      result = processOpCode (JUMP (BRANCH_OFFSET, 0)) memory
   in assertWithMessage result expected "Should leave program counter unchanged."
 
 --test_PIRACY =
@@ -141,68 +141,68 @@ test_JUMP_zero =
 test_JZ_zero =
   let memory = defaultMemoryMap { programCounter = 132}
       expected = memory { programCounter = 142 }
-      result = processOpCode (JZ 0 10) memory
+      result = processOpCode (JZ (SMALL, 0) (BRANCH_OFFSET, 10)) memory
   in assertWithMessage result expected "should jump since passed zero"
 
 test_JZ_notzero =
   let memory = defaultMemoryMap { programCounter = 132}
       expected = memory { programCounter = 133 }
-      result = processOpCode (JZ 10 10) memory
+      result = processOpCode (JZ (SMALL, 10) (BRANCH_OFFSET, 10)) memory
   in assertWithMessage result expected "should not jump since passed ten"
 
 test_JL_lessthan =
   let memory = defaultMemoryMap { programCounter = 132}
       expected = memory { programCounter = 142 }
-      result = processOpCode (JL 12 15 10) memory
+      result = processOpCode (JL (SMALL, 12) (SMALL, 15) (BRANCH_OFFSET, 10)) memory
   in assertWithMessage result expected "should jump since a less than b"
 
 test_JL_equal =
   let memory = defaultMemoryMap { programCounter = 132}
       expected = memory { programCounter = 133 }
-      result = processOpCode (JL 15 15 10) memory
+      result = processOpCode (JL (SMALL, 15) (SMALL, 15) (BRANCH_OFFSET, 10)) memory
   in assertWithMessage result expected "should not jump since a equals b"
 
 test_JL_greater =
   let memory = defaultMemoryMap { programCounter = 132}
       expected = memory { programCounter = 133 }
-      result = processOpCode (JL 20 15 10) memory
+      result = processOpCode (JL (SMALL, 20) (SMALL, 15) (BRANCH_OFFSET, 10)) memory
   in assertWithMessage result expected "should not jump since a greater than b"
 
 test_JG_lessthan =
   let memory = defaultMemoryMap { programCounter = 132}
       expected = memory { programCounter = 133 }
-      result = processOpCode (JG 12 15 10) memory
+      result = processOpCode (JG (SMALL, 12) (SMALL, 15) (BRANCH_OFFSET, 10)) memory
   in assertWithMessage result expected "should not jump since a less than b"
 
 test_JG_equal =
   let memory = defaultMemoryMap { programCounter = 132}
       expected = memory { programCounter = 133 }
-      result = processOpCode (JG 15 15 10) memory
+      result = processOpCode (JG (SMALL, 15) (SMALL, 15) (BRANCH_OFFSET, 10)) memory
   in assertWithMessage result expected "should not jump since a equals b"
 
 test_JG_greater =
   let memory = defaultMemoryMap { programCounter = 132}
       expected = memory { programCounter = 142 }
-      result = processOpCode (JG 20 15 10) memory
+      result = processOpCode (JG (SMALL, 20) (SMALL, 15) (BRANCH_OFFSET, 10)) memory
   in assertWithMessage result expected "should jump since a greater than b"
 
 
 test_JE_lessthan =
   let memory = defaultMemoryMap { programCounter = 132}
       expected = memory { programCounter = 133 }
-      result = processOpCode (JE 12 15 10) memory
+      result = processOpCode (JE (SMALL, 12) (SMALL, 15) (BRANCH_OFFSET, 10)) memory
   in assertWithMessage result expected "should not jump since a less than b"
 
 test_JE_equal =
   let memory = defaultMemoryMap { programCounter = 132}
       expected = memory { programCounter = 142 }
-      result = processOpCode (JE 15 15 10) memory
+      result = processOpCode (JE (SMALL, 15) (SMALL, 15) (BRANCH_OFFSET, 10)) memory
   in assertWithMessage result expected "should jump since a equals b"
 
 test_JE_greater =
   let memory = defaultMemoryMap { programCounter = 132}
       expected = memory { programCounter = 133 }
-      result = processOpCode (JE 20 15 10) memory
+      result = processOpCode (JE (SMALL, 20) (SMALL, 15) (BRANCH_OFFSET, 10)) memory
   in assertWithMessage result expected "should not jump since a greater than b"
 
 
@@ -210,13 +210,13 @@ test_JE_greater =
 test_PRINT_ADDR_aaa =
   let memory = defaultMemoryMap { memory = V.fromList [6342, 39110], shiftRegister = LOWER}
       expected = memory { stream1 = "aaaaaa", programCounter = 1}
-      result = processOpCode (PRINT_ADDR 0) memory
+      result = processOpCode (PRINT_ADDR (BRANCH_OFFSET, 0)) memory
   in assertWithMessage result expected "should append 'aaaaaa' to stream1"
 
 test_PRINT_ADDR_respect_term =
   let memory = defaultMemoryMap { memory = V.fromList [6342, 39110, 6342], shiftRegister = LOWER}
       expected = memory { stream1 = "aaaaaa", programCounter = 1}
-      result = processOpCode (PRINT_ADDR 0) memory
+      result = processOpCode (PRINT_ADDR (BRANCH_OFFSET, 0)) memory
   in assertWithMessage result expected "should append 'aaaaaa' to stream1, respecting the string terminator"
 
 --test_PRINT_aaa =
@@ -228,39 +228,39 @@ test_PRINT_ADDR_respect_term =
 test_ADD =
   let memory = defaultMemoryMap { vars = [0] }
       expected = memory { vars = [10], programCounter = 1}
-      result = processOpCode (ADD 5 5 1) memory
+      result = processOpCode (ADD (SMALL, 5) (SMALL, 5) (STORE_VARIABLE, 1)) memory
   in assertWithMessage result expected "should add 5 and 5 and store result in var 1"
 
 test_ADD_2 =
   let memory = defaultMemoryMap { vars = [0,0] }
       expected = memory { vars = [0,100], programCounter = 1}
-      result = processOpCode (ADD 50 50 2) memory
+      result = processOpCode (ADD (SMALL, 50) (SMALL, 50) (STORE_VARIABLE, 2)) memory
   in assertWithMessage result expected "should add 50 and 50 and store result in var 2"
 
 test_SUB =
   let memory = defaultMemoryMap { vars = [0] }
       expected = memory { vars = [10], programCounter = 1}
-      result = processOpCode (SUB 15 5 1) memory
+      result = processOpCode (SUB (SMALL, 15) (SMALL, 5) (STORE_VARIABLE, 1)) memory
   in assertWithMessage result expected "should subtract 15 and 5 and store result in var 1"
 
 test_MUL =
   let memory = defaultMemoryMap { vars = [0] }
       expected = memory { vars = [50], programCounter = 1}
-      result = processOpCode (MUL 10 5 1) memory
+      result = processOpCode (MUL (SMALL, 10) (SMALL, 5) (STORE_VARIABLE, 1)) memory
   in assertWithMessage result expected "should multiply 10 and 5 and store result in var 1"
 
 
 test_DIV =
   let memory = defaultMemoryMap { vars = [0] }
       expected = memory { vars = [2], programCounter = 1}
-      result = processOpCode (DIV 10 5 1) memory
+      result = processOpCode (DIV (SMALL, 10) (SMALL, 5) (STORE_VARIABLE, 1)) memory
   in assertWithMessage result expected "should divide 10 by 5 and store result in var 1"
 
 
 test_DIV_notwhole =
   let memory = defaultMemoryMap { vars = [0] }
       expected = memory { vars = [1], programCounter = 1}
-      result = processOpCode (DIV 10 7 1) memory
+      result = processOpCode (DIV (SMALL, 10) (SMALL, 7) (STORE_VARIABLE, 1)) memory
   in assertWithMessage result expected "should divide 10 by 7 and get 1 and store result in var 1"
 
 test_getOperandTypes_VARIABLE_FORM =
