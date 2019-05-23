@@ -44,7 +44,7 @@ spec =
      test_JE_greater
      test_PRINT_ADDR_aaa
      test_PRINT_ADDR_respect_term
---     test_PRINT_aaa
+     test_PRINT_aaa
      test_ADD
      test_ADD_2
      test_SUB
@@ -219,11 +219,11 @@ test_PRINT_ADDR_respect_term =
       result = processOpCode (PRINT_ADDR (BRANCH_OFFSET, 0)) memory
   in assertWithMessage result expected "should append 'aaaaaa' to stream1, respecting the string terminator"
 
---test_PRINT_aaa =
-  --let memory = defaultMemoryMap { memory = V.fromList [6342, 39110], shiftRegister = LOWER}
-      --expected = memory { stream1 = "aaaaaa", programCounter = 1}
-      --result = processOpCode (PRINT [6,6,6,6,6,6]) memory
-  --in assertWithMessage result expected "should append 'aaaaaa' to stream1"
+test_PRINT_aaa =
+  let memory = defaultMemoryMap { memory = V.fromList [6342, 39110], shiftRegister = LOWER}
+      expected = memory { stream1 = "aaaaaa", programCounter = 1}
+      result = processOpCode (PRINT) memory
+  in assertWithMessage result expected "should append 'aaaaaa' to stream1"
 
 test_ADD =
   let memory = defaultMemoryMap { vars = [0] }

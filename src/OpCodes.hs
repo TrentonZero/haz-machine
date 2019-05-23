@@ -418,10 +418,11 @@ processOpCodeInternal (DEC_CHK (STORE_VARIABLE, var) (a, val) (BRANCH_OFFSET, of
       stateAfterJmp = processOpCodeInternal (JL (STORE_VARIABLE, newVarVal) (a, val) (BRANCH_OFFSET, offset)) stateAfterDec
    in stateAfterJmp
 
-processOpCodeInternal (PRINT_ADDR (BRANCH_OFFSET, addr)) state = appendToStream1 state $ readASCIIString state addr
+processOpCodeInternal (PRINT_ADDR (BRANCH_OFFSET, addr)) state = appendToStream1 state $ readASCIIString state ((programCounter state) + addr)
 
 
---processOpCodeInternal PRINT state = appendToStream1 state $ catMaybes $ evaluateZString state zstring
+processOpCodeInternal PRINT state = processOpCodeInternal (PRINT_ADDR (BRANCH_OFFSET, 0)) state
+-- processOpCodeInternal PRINT state = appendToStream1 state $ catMaybes $ evaluateZString state (concatMap splitMemoryCellToZChar (readZSCIIString state (programCounter state)))
 
 
 --processOpCodeInternal PIRACY state = performJump state loc
