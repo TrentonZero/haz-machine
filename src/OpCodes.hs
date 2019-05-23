@@ -87,7 +87,6 @@ data OperandType
   | VARIABLE
   | STORE_VARIABLE
   | BRANCH_OFFSET
-  | TEXT
   | OMITTED
   deriving (Show, Eq)
 
