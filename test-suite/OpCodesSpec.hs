@@ -45,6 +45,7 @@ spec =
      test_PRINT_ADDR_aaa
      test_PRINT_ADDR_respect_term
      test_PRINT_aaa
+     test_PRINT_hello
      test_ADD
      test_ADD_2
      test_SUB
@@ -79,7 +80,7 @@ test_newLine =
 
 
 test_QUIT =
-  let memory = defaultMemoryMap { memory = V.fromList [1,2,3,4,5,6,7,0xFFFF,8,9,10] }
+  let memory = defaultMemoryMap { memory = V.fromList [1,2,3,4,5,6,7,0xFF, 0xFF,8,9,10] }
       expected = memory { shouldTerminate = True, programCounter = 1 }
       result = processOpCode QUIT memory
   in assertWithMessage result expected "Should set the terminate flag so that MAIN IO Can kill it"
@@ -208,7 +209,7 @@ test_JE_greater =
 
 
 test_PRINT_ADDR_aaa =
-  let memory = defaultMemoryMap { memory = V.fromList [6342, 39110], shiftRegister = LOWER}
+  let memory = defaultMemoryMap { memory = V.fromList [0x18, 0xC6, 0x98, 0xC6], shiftRegister = LOWER}
       expected = memory { stream1 = "aaaaaa", programCounter = 1}
       result = processOpCode (PRINT_ADDR (BRANCH_OFFSET, 0)) memory
   in assertWithMessage result expected "should append 'aaaaaa' to stream1"
@@ -219,11 +220,23 @@ test_PRINT_ADDR_respect_term =
       result = processOpCode (PRINT_ADDR (BRANCH_OFFSET, 0)) memory
   in assertWithMessage result expected "should append 'aaaaaa' to stream1, respecting the string terminator"
 
+--test_PRINT_aaa =
+  --let memory = defaultMemoryMap { memory = V.fromList [6342, 39110], shiftRegister = LOWER}
+      --expected = memory { stream1 = "aaaaaa", programCounter = 1}
+      --result = processOpCode (PRINT) memory
+  --in assertWithMessage result expected "should append 'aaaaaa' to stream1"
+
 test_PRINT_aaa =
-  let memory = defaultMemoryMap { memory = V.fromList [6342, 39110], shiftRegister = LOWER}
+  let memory = defaultMemoryMap { memory = V.fromList [0xB211, 6342, 39110], shiftRegister = LOWER}
       expected = memory { stream1 = "aaaaaa", programCounter = 1}
       result = processOpCode (PRINT) memory
-  in assertWithMessage result expected "should append 'aaaaaa' to stream1"
+  in assertWithMessage result expected "mine should append 'aaaaaa' to stream1"
+
+test_PRINT_hello =
+  let memory = defaultMemoryMap { memory = V.fromList [0xB211, 0xAA46, 0x3416, 0x459C, 0xA500], shiftRegister = LOWER}
+      expected = memory { stream1 = "Hello.0", programCounter = 1}
+      result = processOpCode (PRINT) memory
+  in assertWithMessage result expected "should append 'Hello.0' to stream1"
 
 test_ADD =
   let memory = defaultMemoryMap { vars = [0] }

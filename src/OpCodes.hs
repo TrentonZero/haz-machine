@@ -421,7 +421,7 @@ processOpCodeInternal (DEC_CHK (STORE_VARIABLE, var) (a, val) (BRANCH_OFFSET, of
 processOpCodeInternal (PRINT_ADDR (BRANCH_OFFSET, addr)) state = appendToStream1 state $ readASCIIString state ((programCounter state) + addr)
 
 
-processOpCodeInternal PRINT state = processOpCodeInternal (PRINT_ADDR (BRANCH_OFFSET, 0)) state
+processOpCodeInternal PRINT state = processOpCodeInternal (PRINT_ADDR (BRANCH_OFFSET, 1)) state
 -- processOpCodeInternal PRINT state = appendToStream1 state $ catMaybes $ evaluateZString state (concatMap splitMemoryCellToZChar (readZSCIIString state (programCounter state)))
 
 

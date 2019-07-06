@@ -43,15 +43,15 @@ test_writeMemoryCell_base =
   let memory = defaultMemoryMap {memory = V.fromList [1..10]}
       location = 2
       cell = 0
-      expected = defaultMemoryMap {memory = V.fromList ([1,2,0] ++ [4..10])}
-  in assertWithMessage (writeMemoryCell memory location cell == expected)
+      expected = defaultMemoryMap {memory = V.fromList ([1,2,0,0] ++ [5..10])}
+  in assertWithMessageLogging (writeMemoryCell memory location cell) expected
                        "Write one memorycell"
 
 test_readMemoryCell_base =
   let memory = defaultMemoryMap {memory = V.fromList [1..10]}
       location = 2
-      expected = Just 3
-  in assertWithMessage (readMemoryCell memory location == expected)
+      expected = Just 0x56
+  in assertWithMessageLogging (readMemoryCell memory location) expected
                        "Read memory"
 
 
@@ -60,7 +60,7 @@ test_readMemoryCell_oob =
   let memory = defaultMemoryMap {memory = V.fromList [1..10]}
       location = 11
       expected = Nothing
-  in assertWithMessage (readMemoryCell memory location == expected)
+  in assertWithMessageLogging (readMemoryCell memory location) expected
                        "Read memory out of bounds."
 
 test_readMemoryCells_base =
