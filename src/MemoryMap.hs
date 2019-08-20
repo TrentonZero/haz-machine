@@ -17,7 +17,7 @@ type MemoryCell = Word16
 -- Sometimes the VM needs bytes
 type MemoryCellByte = Word8
 
-type Memory = V.Vector MemoryCellByte
+type Memory = V.Vector MemoryCell
 
 type Location = Int
 
@@ -173,19 +173,13 @@ writeMemoryCell current loc newCell =
       bytes = unpackMemoryCells (Just newCell)
       byte1 = bytes !! 0
       byte2 = bytes !! 1
-      result = (memory current) V.// [(loc, byte1), (loc+1, byte2)]
+      result = (memory current) V.// [(loc, newCell)]
     in updateMemoryMap current result
 
 -- Read a single memory cell from a given location.
 readMemoryCell
     :: MemoryMap -> Location -> Maybe MemoryCell
-readMemoryCell current loc =
-  let
-    byte1 = memory current V.!? loc
-    byte2 = memory current V.!? (loc + 1)
-  in if isNothing byte1 || isNothing byte2 then
-       Nothing
-     else Just (packWord16 (fromJust byte1) (fromJust byte2))
+readMemoryCell current loc = memory current V.!? loc
 
 -- Read the requested number of memory cells
 readMemoryCells
@@ -202,8 +196,7 @@ readMemoryCellBytes current count loc = concatMap unpackMemoryCells (readMemoryC
 writeMemory
     :: MemoryMap -> Location -> [MemoryCell] -> MemoryMap
 writeMemory current loc cells =
-    let cellBytes = concatMap unpackMemoryCells $ map Just cells
-        zipped = zip [loc .. (loc + (length cellBytes))] cellBytes
+    let zipped = zip [loc .. (loc + (length cells))] cells
         result = memory current V.// zipped
     in updateMemoryMap current result
 

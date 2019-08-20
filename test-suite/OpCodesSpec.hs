@@ -42,7 +42,6 @@ spec =
      test_JE_lessthan
      test_JE_equal
      test_JE_greater
-     test_PRINT_ADDR_aaa
      test_PRINT_ADDR_respect_term
      test_PRINT_aaa
      test_PRINT_hello
@@ -206,13 +205,6 @@ test_JE_greater =
       result = processOpCode (JE (SMALL, 20) (SMALL, 15) (BRANCH_OFFSET, 10)) memory
   in assertWithMessage result expected "should not jump since a greater than b"
 
-
-
-test_PRINT_ADDR_aaa =
-  let memory = defaultMemoryMap { memory = V.fromList [0x18, 0xC6, 0x98, 0xC6], shiftRegister = LOWER}
-      expected = memory { stream1 = "aaaaaa", programCounter = 1}
-      result = processOpCode (PRINT_ADDR (BRANCH_OFFSET, 0)) memory
-  in assertWithMessage result expected "should append 'aaaaaa' to stream1"
 
 test_PRINT_ADDR_respect_term =
   let memory = defaultMemoryMap { memory = V.fromList [6342, 39110, 6342], shiftRegister = LOWER}
