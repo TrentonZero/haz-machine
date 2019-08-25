@@ -44,7 +44,7 @@ spec =
      test_JE_greater
      test_PRINT_ADDR_respect_term
      test_PRINT_aaa
-     test_PRINT_hello
+     test_PRINT_ema
      test_ADD
      test_ADD_2
      test_SUB
@@ -224,11 +224,11 @@ test_PRINT_aaa =
       result = processOpCode (PRINT) memory
   in assertWithMessage result expected "mine should append 'aaaaaa' to stream1"
 
-test_PRINT_hello =
+test_PRINT_ema =
   let memory = defaultMemoryMap { memory = V.fromList [0xB211, 0xAA46, 0x3416, 0x459C, 0xA500], shiftRegister = LOWER}
-      expected = memory { stream1 = "Hello.0", programCounter = 1}
+      expected = memory { stream1 = "ema", programCounter = 1}
       result = processOpCode (PRINT) memory
-  in assertWithMessage result expected "should append 'Hello.0' to stream1"
+  in assertWithMessage result expected "should append 'ema' to stream1"
 
 test_ADD =
   let memory = defaultMemoryMap { vars = [0] }
