@@ -43,14 +43,14 @@ test_writeMemoryCell_base =
   let memory = defaultMemoryMap {memory = V.fromList [1..10]}
       location = 2
       cell = 0
-      expected = defaultMemoryMap {memory = V.fromList ([1,2,0,0] ++ [5..10])}
+      expected = defaultMemoryMap {memory = V.fromList ([1,2,0,4] ++ [5..10])}
   in assertWithMessageLogging (writeMemoryCell memory location cell) expected
                        "Write one memorycell"
 
 test_readMemoryCell_base =
   let memory = defaultMemoryMap {memory = V.fromList [1..10]}
       location = 2
-      expected = Just 0x56
+      expected = Just 0x03
   in assertWithMessageLogging (readMemoryCell memory location) expected
                        "Read memory"
 

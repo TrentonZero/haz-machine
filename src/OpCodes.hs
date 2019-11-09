@@ -314,11 +314,14 @@ And it's the operand type that is the array that we are folding over.
 getOperands
     :: [OperandType] -> [MemoryCellByte] -> [Operand]
 -- temporary just to compile
-getOperands _ _ = [(LARGE, 0)]
+getOperands [] _ = [(LARGE, 0)]
+getOperands (headType:types) [] = [(LARGE, 0)]
 -- not resultl sure right now how to implement this.
 -- folder types cells = foldr ((flip getOperand)) ([],flatMap unpack cells) types
-getOperands (headType:types) (byte1:byte2:bytes) =
-    if headType == LARGE
+getOperands (headType:types) (byte1:orig_bytes) =
+  let byte2 = head orig_bytes
+      bytes = tail orig_bytes
+  in if headType == LARGE
         then getOperand headType [byte1,byte2] : getOperands types bytes
         else getOperand headType [byte1] : getOperands types (byte2:bytes)
 
