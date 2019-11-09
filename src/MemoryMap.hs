@@ -176,6 +176,14 @@ writeMemoryCell current loc newCell =
       result = (memory current) V.// [(loc, byte1), (loc+1, byte2)]
     in updateMemoryMap current result
 
+
+-- Read just a byte
+readMemoryCellByte
+    :: MemoryMap -> Location -> Maybe MemoryCellByte
+readMemoryCellByte current loc = memory current V.!? loc
+
+
+  
 -- Read a single memory cell from a given location.
 readMemoryCell
     :: MemoryMap -> Location -> Maybe MemoryCell

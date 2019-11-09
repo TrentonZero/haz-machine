@@ -12,6 +12,11 @@ dependencies:
 library:
   source-dirs: src/
 
+executables:
+  haz-machine:
+    main: Main.hs
+    source-dirs: src/
+
 
 tests:
   haz-machine-test:
