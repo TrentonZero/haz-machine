@@ -17,9 +17,10 @@ type MemoryCell = Word16
 -- Sometimes the VM needs bytes
 type MemoryCellByte = Word8
 
-type Memory = V.Vector MemoryCell
+type Memory = V.Vector MemoryCellByte
 
 type Location = Int
+type ByteAddress = Int
 
 --
 -- ZChar interpretation will depend upon the current shift register.
@@ -170,24 +171,41 @@ writeMemoryCell
     :: MemoryMap -> Location -> MemoryCell -> MemoryMap
 writeMemoryCell current loc newCell =
     let
-      bytes = unpackMemoryCells (Just newCell)
+      bytes = unpackMemoryCell (Just newCell)
       byte1 = bytes !! 0
       byte2 = bytes !! 1
-      result = (memory current) V.// [(loc, newCell)]
+      result = ((memory current) V.// [(loc, byte1)]) V.// [(loc+1, byte2)]
     in updateMemoryMap current result
 
 
 -- Read just a byte
 readMemoryCellByte
-    :: MemoryMap -> Location -> Maybe MemoryCellByte
+    :: MemoryMap -> ByteAddress -> Maybe MemoryCellByte
 readMemoryCellByte current loc = memory current V.!? loc
 
+readMemoryCell
+    :: MemoryMap -> ByteAddress -> Maybe MemoryCell
+readMemoryCell current loc =
+  let
+    byte1 = memory current V.!? loc
+    byte2 = memory current V.!? (loc+1)
+  in if isNothing byte1 || isNothing byte2 then
+    Nothing
+  else
+    Just (packWord16 (fromJust byte1) (fromJust byte2))
 
   
 -- Read a single memory cell from a given location.
-readMemoryCell
-    :: MemoryMap -> Location -> Maybe MemoryCell
-readMemoryCell current loc = memory current V.!? loc
+-- readMemoryCell
+    -- :: MemoryMap -> Location -> Maybe MemoryCell
+-- readMemoryCell current loc =
+  -- let
+    -- byte1 = memory current V.!? (loc*2)
+    -- byte2 = memory current V.!? ((loc*2)+1)
+  -- in if isNothing byte1 || isNothing byte2 then
+    -- Nothing
+  -- else
+    -- Just (packWord16 (fromJust byte1) (fromJust byte2))
 
 -- Read the requested number of memory cells
 readMemoryCells
@@ -196,7 +214,7 @@ readMemoryCells current count loc = map (readMemoryCell current) [loc..loc+count
 
 readMemoryCellBytes
     :: MemoryMap -> Int -> Location -> [MemoryCellByte]
-readMemoryCellBytes current count loc = concatMap unpackMemoryCells (readMemoryCells current count loc)
+readMemoryCellBytes current count loc = concatMap unpackMemoryCell (readMemoryCells current count loc)
 
 -- This basically splits the memory into three, and replaces the middle with the memory we intend to
 -- write. Probably not the most efficient way to do it, especially given the cost of computing the
@@ -204,7 +222,9 @@ readMemoryCellBytes current count loc = concatMap unpackMemoryCells (readMemoryC
 writeMemory
     :: MemoryMap -> Location -> [MemoryCell] -> MemoryMap
 writeMemory current loc cells =
-    let zipped = zip [loc .. (loc + (length cells))] cells
+    let
+        bytes  = unpackMemoryCells cells
+        zipped = zip [loc .. (loc + (length bytes))] bytes
         result = memory current V.// zipped
     in updateMemoryMap current result
 
@@ -242,9 +262,11 @@ peekFromStackInt :: [MemoryCell] -> (Maybe MemoryCell, [MemoryCell])
 peekFromStackInt (x:stack) = (Just x, x : stack)
 peekFromStackInt _         = (Nothing, [])
 
-
-unpackMemoryCells :: Maybe MemoryCell -> [MemoryCellByte]
+unpackMemoryCells :: [MemoryCell] -> [MemoryCellByte]
 unpackMemoryCells = concatMap unpackWord16
+
+unpackMemoryCell :: Maybe MemoryCell -> [MemoryCellByte]
+unpackMemoryCell = concatMap unpackWord16
 
 
 unpackWord16 :: Word16 -> [Word8]

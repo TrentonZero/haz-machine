@@ -29,7 +29,6 @@ main = do
   let newmem = mem { MM.programCounter = initialProgramCount }
   let firstOpCodeBytes = MM.readMemoryCell mem initialProgramCount
 
-  
   let zMachineVersion = (fromJust (MM.readMemoryCellByte mem 0x00))
   let firstOpCode = OC.getOpCode newmem
 
