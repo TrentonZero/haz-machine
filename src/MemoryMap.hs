@@ -279,6 +279,16 @@ packWord16  byte1 byte2 =  runGet DBG.getWord16be
                                  (LBS.append . toLazyByteString . word8)
                                  LBS.empty [byte1,byte2]
 
+
+getHighMemRange :: MemoryMap -> (ByteAddress, ByteAddress)
+getHighMemRange current =
+  let start = (fromJust (readMemoryCell current 0x04))
+      end   = V.length (memory current)
+  in ((fromIntegral start), end)
+
+
+
+  
 -------  LOCAL FUNCTIONS TO HELP OUT -----------
 fst3
     :: (a, b, c) -> a
