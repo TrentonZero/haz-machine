@@ -7,6 +7,7 @@ import           Data.ByteString.Builder
 import           Data.ByteString.Lazy    as LBS (append, empty, snoc, toStrict,
                                                  unpack)
 import           Data.Maybe
+import           Control.Monad
 import qualified Data.Vector.Unboxed     as V
 import           Data.Word               (Word16)
 import           Debug.Trace
@@ -189,12 +190,9 @@ readMemoryCell current loc =
   let
     byte1 = memory current V.!? loc
     byte2 = memory current V.!? (loc+1)
-  in if isNothing byte1 || isNothing byte2 then
-    Nothing
-  else
-    Just (packWord16 (fromJust byte1) (fromJust byte2))
+  in liftM2 packWord16 byte1 byte2
 
-  
+
 -- Read a single memory cell from a given location.
 -- readMemoryCell
     -- :: MemoryMap -> Location -> Maybe MemoryCell
