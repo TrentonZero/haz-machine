@@ -6,6 +6,7 @@ import qualified Data.Vector.Unboxed as V
 import qualified MemoryMap           as MM
 import qualified OpCodes             as OC
 import           System.IO
+import           Control.Monad
 
 main = do
   bytestring <- B.readFile "zork1.z1"
@@ -32,6 +33,9 @@ main = do
 
   let newmem = mem { MM.programCounter = initialProgramCount }
   let firstOpCodeBytes = MM.readMemoryCell mem initialProgramCount
+  let firstOpCodeByte = head (MM.unpackWord16 (fromJust firstOpCodeBytes))
+  let firstOpCodeForm = liftM OC.getOpCodeForm firstOpCodeBytes
+  let firstOpCodeOperandTypes = liftM2 OC.getOperandTypes firstOpCodeForm firstOpCodeBytes
 
   let zMachineVersion = (fromJust (MM.readMemoryCellByte mem 0x00))
   let firstOpCode = OC.getOpCode newmem
@@ -43,7 +47,26 @@ main = do
   print ("Read into memory map. Z Machine Version " ++ (show zMachineVersion))
 
   print ("First opcode bytes: " ++ (show firstOpCodeBytes))
+  print ("First opcode byte: " ++ (show (firstOpCodeByte)))
   print ("First opcode: " ++ (show firstOpCode))
+  print ("First opcode: " ++ (show firstOpCodeForm))
+  print ("First opcode operand types: " ++ (show firstOpCodeOperandTypes))
+
+  let stateAfterFirstOpcode = OC.processOpCodeInternal firstOpCode newmem
+  print ("PC after first opcode: " ++ (show (MM.programCounter stateAfterFirstOpcode)))
+  
+  let sndOpCodeBytes = MM.readMemoryCell stateAfterFirstOpcode (MM.programCounter stateAfterFirstOpcode)
+  let sndOpCode = OC.getOpCode stateAfterFirstOpcode
+
+  let sndOpCodeByte = head (MM.unpackWord16 (fromJust sndOpCodeBytes))
+  let sndOpCodeForm = liftM OC.getOpCodeForm sndOpCodeBytes
+  let sndOpCodeOperandTypes = liftM2 OC.getOperandTypes sndOpCodeForm sndOpCodeBytes
+  
+  print ("Snd opcode bytes: " ++ (show sndOpCodeBytes))
+  print ("Snd opcode byte: " ++ (show (sndOpCodeByte)))
+  print ("Snd opcode: " ++ (show sndOpCode))
+  print ("Snd opcode: " ++ (show sndOpCodeForm))
+  print ("Snd opcode operand types: " ++ (show sndOpCodeOperandTypes))
 
 
 

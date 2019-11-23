@@ -20,8 +20,8 @@ type MemoryCellByte = Word8
 
 type Memory = V.Vector MemoryCellByte
 
-type Location = Int
-type ByteAddress = Int
+type Location = Word16
+type ByteAddress = Word16
 
 --
 -- ZChar interpretation will depend upon the current shift register.
@@ -55,7 +55,7 @@ return to its state.
 data MemoryMap = MemoryMap
     { memory          :: Memory
     , stack           :: [MemoryCell]
-    , programCounter  :: Int
+    , programCounter  :: ByteAddress
     , stackFrames     :: [[MemoryCell]]
     , shiftRegister   :: ShiftRegister
     , shouldTerminate :: Bool
@@ -115,7 +115,7 @@ updateStack current newStack =
         (vars current)
         (stream1 current)
 
-updateProgramCounter :: MemoryMap -> Int -> MemoryMap
+updateProgramCounter :: MemoryMap -> Word16 -> MemoryMap
 updateProgramCounter current newCounter =
     MemoryMap
         (memory current)
@@ -151,6 +151,20 @@ updateShiftRegister current newShiftRegister =
         (vars current)
         (stream1 current)
 
+
+pushStackFrame :: MemoryMap -> MemoryMap
+pushStackFrame current =
+    MemoryMap
+        (memory current)
+        []
+        (programCounter current)
+        ((stack current) : (stackFrames current))
+        (shiftRegister current)
+        (shouldTerminate current)
+        (vars current)
+        (stream1 current)
+  
+
 getVar :: MemoryMap -> Int -> Int
 getVar current var = vars current !! var
 
@@ -175,21 +189,21 @@ writeMemoryCell current loc newCell =
       bytes = unpackMemoryCell (Just newCell)
       byte1 = bytes !! 0
       byte2 = bytes !! 1
-      result = ((memory current) V.// [(loc, byte1)]) V.// [(loc+1, byte2)]
+      result = ((memory current) V.// [(fromIntegral loc, byte1)]) V.// [(fromIntegral loc+1, byte2)]
     in updateMemoryMap current result
 
 
 -- Read just a byte
 readMemoryCellByte
     :: MemoryMap -> ByteAddress -> Maybe MemoryCellByte
-readMemoryCellByte current loc = memory current V.!? loc
+readMemoryCellByte current loc = memory current V.!? fromIntegral loc
 
 readMemoryCell
     :: MemoryMap -> ByteAddress -> Maybe MemoryCell
 readMemoryCell current loc =
   let
-    byte1 = memory current V.!? loc
-    byte2 = memory current V.!? (loc+1)
+    byte1 = memory current V.!? fromIntegral loc
+    byte2 = memory current V.!? fromIntegral (loc+1)
   in liftM2 packWord16 byte1 byte2
 
 
@@ -207,11 +221,11 @@ readMemoryCell current loc =
 
 -- Read the requested number of memory cells
 readMemoryCells
-    :: MemoryMap -> Int -> Location -> [Maybe MemoryCell]
+    :: MemoryMap -> Location -> Location -> [Maybe MemoryCell]
 readMemoryCells current count loc = map (readMemoryCell current) [loc..loc+count-1]
 
 readMemoryCellBytes
-    :: MemoryMap -> Int -> Location -> [MemoryCellByte]
+    :: MemoryMap -> Location -> Location -> [MemoryCellByte]
 readMemoryCellBytes current count loc = concatMap unpackMemoryCell (readMemoryCells current count loc)
 
 -- This basically splits the memory into three, and replaces the middle with the memory we intend to
@@ -222,7 +236,7 @@ writeMemory
 writeMemory current loc cells =
     let
         bytes  = unpackMemoryCells cells
-        zipped = zip [loc .. (loc + (length bytes))] bytes
+        zipped = zip [(fromIntegral loc) .. (fromIntegral (loc + (fromIntegral (length bytes))))] bytes
         result = memory current V.// zipped
     in updateMemoryMap current result
 
@@ -280,9 +294,9 @@ packWord16  byte1 byte2 =  runGet DBG.getWord16be
 
 getHighMemRange :: MemoryMap -> (ByteAddress, ByteAddress)
 getHighMemRange current =
-  let start = (fromJust (readMemoryCell current 0x04))
-      end   = V.length (memory current)
-  in ((fromIntegral start), end)
+  let start = fromIntegral (fromJust (readMemoryCell current 0x04))
+      end   = fromIntegral (V.length (memory current))
+  in (start, end)
 
 
 

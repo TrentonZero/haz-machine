@@ -5,6 +5,7 @@ import           Data.Char
 import           Data.Maybe
 import           Data.Word   (Word16, Word8)
 import           Debug.Trace
+import           Control.Monad
 import qualified MemoryMap   as MM
 {-# ANN module ("HLint: ignore Redundant bracket"::String) #-}
 
@@ -28,7 +29,7 @@ readZSCIIString
 readZSCIIString current loc =
   let cell = MM.readMemoryCell current loc
   in case cell of
-       Nothing -> []
+       Nothing ->[]
        Just cell ->
          if (testBit cell 15) then [cell] else
            cell :
